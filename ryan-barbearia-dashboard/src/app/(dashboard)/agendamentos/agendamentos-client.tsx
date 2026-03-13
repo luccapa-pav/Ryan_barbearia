@@ -21,43 +21,43 @@ const STATUS_OPTIONS = [
   { value: 'faltou',     label: 'Faltou'     },
 ]
 
-// Ordem: Pendentes (amber) → Confirmados (azul) → Cancelados (vermelho) → Concluídos (verde)
+// Pendentes e Confirmados: cinza. Cancelados e Concluídos: cor suave no light, forte no dark.
 const STAT_CARDS = [
   {
     key: 'pendente',
     label: 'Pendentes',
     icon: Clock,
-    iconBg: 'bg-amber-100 dark:bg-amber-950/40',
-    iconColor: 'text-amber-600 dark:text-amber-400',
-    activeBorder: 'border-amber-400 shadow-[0_0_0_1px_theme(colors.amber.400)]',
-    hoverBorder: 'hover:border-amber-300',
+    iconBg: 'bg-zinc-100 dark:bg-zinc-800/60',
+    iconColor: 'text-zinc-400 dark:text-zinc-400',
+    activeBorder: 'border-zinc-400 shadow-[0_0_0_1px_theme(colors.zinc.400)]',
+    hoverBorder: 'hover:border-zinc-300',
   },
   {
     key: 'confirmado',
     label: 'Confirmados',
     icon: CalendarCheck,
-    iconBg: 'bg-blue-100 dark:bg-blue-950/40',
-    iconColor: 'text-blue-600 dark:text-blue-400',
-    activeBorder: 'border-blue-400 shadow-[0_0_0_1px_theme(colors.blue.400)]',
-    hoverBorder: 'hover:border-blue-300',
+    iconBg: 'bg-zinc-100 dark:bg-zinc-800/60',
+    iconColor: 'text-zinc-400 dark:text-zinc-400',
+    activeBorder: 'border-zinc-400 shadow-[0_0_0_1px_theme(colors.zinc.400)]',
+    hoverBorder: 'hover:border-zinc-300',
   },
   {
     key: 'cancelado',
     label: 'Cancelados',
     icon: XCircle,
-    iconBg: 'bg-red-100 dark:bg-red-950/40',
-    iconColor: 'text-red-500 dark:text-red-400',
+    iconBg: 'bg-red-50 dark:bg-red-500/20',
+    iconColor: 'text-red-300 dark:text-red-400',
     activeBorder: 'border-red-400 shadow-[0_0_0_1px_theme(colors.red.400)]',
-    hoverBorder: 'hover:border-red-300',
+    hoverBorder: 'hover:border-red-200 dark:hover:border-red-500',
   },
   {
     key: 'concluido',
     label: 'Concluídos',
     icon: CheckCircle,
-    iconBg: 'bg-emerald-100 dark:bg-emerald-950/40',
-    iconColor: 'text-emerald-600 dark:text-emerald-400',
+    iconBg: 'bg-emerald-50 dark:bg-emerald-500/20',
+    iconColor: 'text-emerald-300 dark:text-emerald-400',
     activeBorder: 'border-emerald-400 shadow-[0_0_0_1px_theme(colors.emerald.400)]',
-    hoverBorder: 'hover:border-emerald-300',
+    hoverBorder: 'hover:border-emerald-200 dark:hover:border-emerald-500',
   },
 ] as const
 
