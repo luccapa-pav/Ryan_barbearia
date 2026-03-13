@@ -49,11 +49,12 @@ export function MetricasWhatsapp({ leads }: MetricasWhatsappProps) {
 
   return (
     <div className="space-y-3">
-      <div className="flex items-center gap-2">
+      <div className="flex items-center justify-center gap-2">
         <span className="w-1 h-4 rounded-full bg-primary inline-block" />
         <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest font-gotham">
           WhatsApp — Bot João
         </p>
+        <span className="w-1 h-4 rounded-full bg-primary inline-block" />
       </div>
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {cards.map((card) => {

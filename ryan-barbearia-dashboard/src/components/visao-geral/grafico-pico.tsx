@@ -45,14 +45,15 @@ export function GraficoStatus({ leads }: GraficoStatusProps) {
       {/* Funil */}
       <div className={panelClass}>
         <div className="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-transparent via-primary to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
-        <div className="flex items-center gap-2">
-          <span className="w-1 h-4 rounded-full bg-primary" />
-          <div>
+        <div className="flex flex-col items-center text-center gap-0.5">
+          <div className="flex items-center gap-2">
+            <span className="w-1 h-4 rounded-full bg-primary" />
             <p className="text-xs font-bold text-foreground uppercase tracking-widest font-gotham">
               Funil de Conversas
             </p>
-            <p className="text-[11px] text-muted-foreground mt-0.5">Etapas do bot João</p>
+            <span className="w-1 h-4 rounded-full bg-primary" />
           </div>
+          <p className="text-[11px] text-muted-foreground">Etapas do bot João</p>
         </div>
 
         {total === 0 ? (
@@ -85,14 +86,15 @@ export function GraficoStatus({ leads }: GraficoStatusProps) {
       {/* Top serviços */}
       <div className={panelClass}>
         <div className="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-transparent via-primary to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
-        <div className="flex items-center gap-2">
-          <span className="w-1 h-4 rounded-full bg-primary" />
-          <div>
+        <div className="flex flex-col items-center text-center gap-0.5">
+          <div className="flex items-center gap-2">
+            <span className="w-1 h-4 rounded-full bg-primary" />
             <p className="text-xs font-bold text-foreground uppercase tracking-widest font-gotham">
               Serviços Mais Pedidos
             </p>
-            <p className="text-[11px] text-muted-foreground mt-0.5">Extraído das conversas</p>
+            <span className="w-1 h-4 rounded-full bg-primary" />
           </div>
+          <p className="text-[11px] text-muted-foreground">Extraído das conversas</p>
         </div>
 
         {topServicos.length === 0 ? (

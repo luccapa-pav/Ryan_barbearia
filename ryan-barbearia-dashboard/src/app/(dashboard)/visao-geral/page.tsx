@@ -100,13 +100,13 @@ export default async function VisaoGeralPage({
 
   return (
     <div className="space-y-8">
-      {/* Header */}
-      <div className="flex items-center justify-between gap-4 flex-wrap">
+      {/* Header — centralizado */}
+      <div className="flex flex-col items-center text-center gap-3">
         <div>
           <p className="text-xs font-medium text-muted-foreground uppercase tracking-widest mb-1">
             {labelCapitalizado}
           </p>
-          <h2 className="text-2xl font-display font-bold text-foreground">Visão Geral</h2>
+          <h2 className="text-3xl font-gotham font-black text-foreground tracking-tight">Visão Geral</h2>
         </div>
         <Suspense fallback={null}>
           <FiltroPeriodo />
