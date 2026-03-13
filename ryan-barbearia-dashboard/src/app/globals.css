@@ -27,23 +27,23 @@
     --radius: 0.75rem;
   }
 
-  /* ── Dark theme ── */
+  /* ── Dark theme (true black) ── */
   .dark {
-    --background: 222 25% 8%;
-    --foreground: 220 15% 92%;
-    --card: 222 22% 12%;
-    --card-foreground: 220 15% 92%;
-    --border: 222 18% 20%;
-    --input: 222 18% 20%;
+    --background: 0 0% 4%;
+    --foreground: 0 0% 93%;
+    --card: 0 0% 7%;
+    --card-foreground: 0 0% 93%;
+    --border: 0 0% 14%;
+    --input: 0 0% 14%;
     --ring: 25 95% 50%;
     --primary: 25 95% 50%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 222 20% 18%;
-    --secondary-foreground: 220 15% 80%;
-    --muted: 222 20% 18%;
-    --muted-foreground: 220 10% 55%;
-    --accent: 222 20% 18%;
-    --accent-foreground: 220 15% 80%;
+    --secondary: 0 0% 11%;
+    --secondary-foreground: 0 0% 78%;
+    --muted: 0 0% 11%;
+    --muted-foreground: 0 0% 50%;
+    --accent: 0 0% 11%;
+    --accent-foreground: 0 0% 78%;
     --destructive: 0 62% 45%;
     --destructive-foreground: 0 0% 100%;
     --radius: 0.75rem;
