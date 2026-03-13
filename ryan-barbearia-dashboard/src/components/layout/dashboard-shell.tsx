@@ -35,7 +35,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
           {/* Brand */}
           <div className="flex items-center gap-3 shrink-0">
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-gradient shadow-brand transition-transform duration-200 hover:scale-110 active:scale-95">
-              <Scissors className="h-4.5 w-4.5 text-white" />
+              <Scissors className="h-4 w-4 text-white" />
             </div>
             <div className="hidden sm:block">
               <p className="font-gotham font-bold text-foreground text-sm leading-none tracking-wide">
@@ -64,12 +64,10 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
 
       {/* ── Main ── */}
       <main className="mx-auto max-w-[1600px] px-4 md:px-6 py-5">
-
-        {/* Content frame with amber border */}
         <div className="rounded-2xl border border-primary/20 bg-card/30 p-4 md:p-5 shadow-sm">
 
-          {/* Tab navigation */}
-          <nav className="mb-5 flex gap-0.5 rounded-xl bg-muted/60 p-1 overflow-x-auto scrollbar-none border border-border/50">
+          {/* Tab navigation — centered */}
+          <nav className="mb-5 flex justify-center gap-0.5 rounded-xl bg-muted/60 p-1 overflow-x-auto scrollbar-none border border-border/50">
             {TABS.map(({ href, label, icon: Icon }) => {
               const active = pathname === href || pathname.startsWith(href + '/')
               return (
@@ -94,8 +92,8 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
             })}
           </nav>
 
-          {/* Page content */}
-          <div className="animate-fade-up">
+          {/* Page content — key forces remount on route change, restarting animation */}
+          <div key={pathname} className="animate-fade-up">
             {children}
           </div>
         </div>

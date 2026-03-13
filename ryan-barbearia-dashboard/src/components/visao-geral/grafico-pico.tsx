@@ -37,7 +37,7 @@ export function GraficoStatus({ leads }: GraficoStatusProps) {
   const maxServico = topServicos[0]?.[1] ?? 1
 
   const panelClass =
-    'group bg-card rounded-xl border border-border hover:border-primary/35 shadow-card hover:shadow-elevated transition-all duration-200 hover:scale-[1.015] hover:-translate-y-0.5 p-5 space-y-4 overflow-hidden relative cursor-default'
+    'group bg-card rounded-xl border border-zinc-300 dark:border-zinc-600 hover:border-primary shadow-card hover:shadow-elevated transition-all duration-200 hover:scale-[1.015] hover:-translate-y-0.5 p-5 space-y-4 overflow-hidden relative cursor-default'
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
