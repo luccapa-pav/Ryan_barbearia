@@ -19,17 +19,23 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="pt-BR" className="dark">
+    <html lang="pt-BR" suppressHydrationWarning>
+      <head>
+        {/* Apply theme before paint to avoid flash */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){var t=localStorage.getItem('theme')||'dark';document.documentElement.classList.toggle('dark',t==='dark');})()`,
+          }}
+        />
+      </head>
       <body className={`${inter.variable} font-sans antialiased`}>
         {children}
         <Toaster
-          theme="dark"
+          theme="system"
           position="top-right"
           toastOptions={{
-            style: {
-              background: 'hsl(240 10% 7%)',
-              border: '1px solid hsl(240 4% 16%)',
-              color: 'hsl(0 0% 98%)',
+            classNames: {
+              toast: 'bg-card border border-border text-foreground shadow-elevated',
             },
           }}
         />
