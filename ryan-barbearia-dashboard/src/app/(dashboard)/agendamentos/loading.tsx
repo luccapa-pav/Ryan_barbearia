@@ -1,5 +1,7 @@
-function Skeleton({ className }: { className?: string }) {
-  return <div className={`animate-pulse rounded-lg bg-muted/70 ${className ?? ''}`} />
+import React from 'react'
+
+function Skeleton({ className, style }: { className?: string; style?: React.CSSProperties }) {
+  return <div className={`animate-pulse rounded-lg bg-muted/70 ${className ?? ''}`} style={style} />
 }
 
 export default function AgendamentosLoading() {
