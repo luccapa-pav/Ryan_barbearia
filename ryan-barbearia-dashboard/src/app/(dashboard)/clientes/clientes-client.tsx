@@ -1,157 +1,400 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter, usePathname } from 'next/navigation'
-import { Plus, Search, Users, Phone, ChevronLeft, ChevronRight } from 'lucide-react'
-import { formatarData, formatarTelefone } from '@/lib/utils'
-import type { Cliente } from '@/lib/supabase/types'
-import { HistoricoCliente } from '@/components/clientes/historico-cliente'
+import { useState, useMemo } from 'react'
+import { Search, Users, UserPlus, TrendingUp, DollarSign, Phone, X, Clock, CheckCircle, CalendarDays } from 'lucide-react'
+import { format, isThisMonth } from 'date-fns'
+import { ptBR } from 'date-fns/locale'
+import { formatarMoeda, formatarTelefone, STATUS_COLORS, STATUS_LABELS, cn } from '@/lib/utils'
+import type { Cliente, AgendamentoComRelacoes } from '@/lib/supabase/types'
 
 interface ClientesPageClientProps {
   clientes: Cliente[]
-  total: number
-  pagina: number
-  pageSize: number
-  busca: string
+  agendamentos: AgendamentoComRelacoes[]
 }
 
-export function ClientesPageClient({ clientes, total, pagina, pageSize, busca }: ClientesPageClientProps) {
-  const router = useRouter()
-  const pathname = usePathname()
-  const [selectedCliente, setSelectedCliente] = useState<Cliente | null>(null)
-  const [searchValue, setSearchValue] = useState(busca)
+// Cores de avatar derivadas do nome
+const AVATAR_COLORS = [
+  'bg-primary/20 text-primary',
+  'bg-blue-500/20 text-blue-400',
+  'bg-violet-500/20 text-violet-400',
+  'bg-emerald-500/20 text-emerald-400',
+  'bg-rose-500/20 text-rose-400',
+  'bg-amber-500/20 text-amber-400',
+  'bg-cyan-500/20 text-cyan-400',
+]
 
-  const totalPages = Math.ceil(total / pageSize)
+function avatarColor(nome: string) {
+  let hash = 0
+  for (let i = 0; i < nome.length; i++) hash = nome.charCodeAt(i) + ((hash << 5) - hash)
+  return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length]
+}
 
-  function handleSearch(e: React.FormEvent) {
-    e.preventDefault()
-    const params = new URLSearchParams()
-    if (searchValue) params.set('q', searchValue)
-    router.push(`${pathname}?${params.toString()}`)
-  }
+export function ClientesPageClient({ clientes, agendamentos }: ClientesPageClientProps) {
+  const [search, setSearch]               = useState('')
+  const [selected, setSelected]           = useState<Cliente | null>(null)
 
-  function goToPage(page: number) {
-    const params = new URLSearchParams()
-    if (busca) params.set('q', busca)
-    params.set('pagina', String(page))
-    router.push(`${pathname}?${params.toString()}`)
-  }
+  // Stats por cliente — computado uma vez
+  const statsMap = useMemo(() => {
+    const map: Record<string, {
+      total: number
+      concluidos: number
+      totalGasto: number
+      ultimaVisita: string | null
+      servicos: AgendamentoComRelacoes[]
+    }> = {}
+
+    for (const a of agendamentos) {
+      if (!map[a.cliente_id]) {
+        map[a.cliente_id] = { total: 0, concluidos: 0, totalGasto: 0, ultimaVisita: null, servicos: [] }
+      }
+      const s = map[a.cliente_id]!
+      s.total++
+      s.servicos.push(a)
+      if (a.status === 'concluido') {
+        s.concluidos++
+        s.totalGasto += a.servicos?.preco ?? 0
+        if (!s.ultimaVisita || a.data_hora > s.ultimaVisita) s.ultimaVisita = a.data_hora
+      }
+    }
+    return map
+  }, [agendamentos])
+
+  // Métricas globais
+  const metricas = useMemo(() => {
+    const now = new Date()
+    const novosEsteMes = clientes.filter(c => isThisMonth(new Date(c.criado_em))).length
+    const totalConcluidos = agendamentos.filter(a => a.status === 'concluido').length
+    const receitaTotal = agendamentos
+      .filter(a => a.status === 'concluido')
+      .reduce((s, a) => s + (a.servicos?.preco ?? 0), 0)
+    return { novosEsteMes, totalConcluidos, receitaTotal }
+  }, [clientes, agendamentos])
+
+  // Busca client-side instantânea
+  const filtered = useMemo(() => {
+    if (!search.trim()) return clientes
+    const q = search.toLowerCase()
+    return clientes.filter(c =>
+      c.nome.toLowerCase().includes(q) || c.telefone.includes(q)
+    )
+  }, [clientes, search])
 
   return (
-    <div className="space-y-6 animate-fade-in">
-      <div className="flex items-center justify-between">
+    <div className="space-y-6 animate-fade-up">
+
+      {/* ── Header ── */}
+      <div className="flex flex-col items-center text-center gap-3">
         <div>
-          <h2 className="text-2xl font-bold text-foreground">Clientes</h2>
-          <p className="text-muted-foreground text-sm mt-1">{total} cliente{total !== 1 ? 's' : ''} cadastrado{total !== 1 ? 's' : ''}</p>
+          <h2 className="text-5xl font-gotham font-black text-foreground tracking-tight">Clientes</h2>
+          <p className="text-base font-semibold text-muted-foreground tracking-wide mt-1">
+            {clientes.length} cliente{clientes.length !== 1 ? 's' : ''} cadastrado{clientes.length !== 1 ? 's' : ''}
+          </p>
+        </div>
+
+        {/* Busca centralizada */}
+        <div className="relative w-full max-w-sm">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+          <input
+            type="text"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder="Buscar por nome ou telefone..."
+            className="w-full pl-9 pr-9 py-2.5 rounded-xl bg-muted/60 border border-border/60 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 transition-all"
+          />
+          {search && (
+            <button
+              onClick={() => setSearch('')}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          )}
         </div>
       </div>
 
-      {/* Search */}
-      <form onSubmit={handleSearch} className="flex gap-3">
-        <div className="relative flex-1 max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <input
-            type="text"
-            value={searchValue}
-            onChange={(e) => setSearchValue(e.target.value)}
-            placeholder="Buscar por nome ou telefone..."
-            className="w-full pl-9 pr-3 py-2 rounded-md bg-card border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-amber-500/50"
-          />
-        </div>
-        <button
-          type="submit"
-          className="px-4 py-2 bg-secondary hover:bg-secondary/80 text-foreground text-sm rounded-md transition-colors"
-        >
-          Buscar
-        </button>
-      </form>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Client list */}
-        <div className="lg:col-span-2">
-          <div className="bg-card border border-border rounded-xl overflow-hidden">
-            {clientes.length === 0 ? (
-              <div className="p-12 flex flex-col items-center text-center space-y-3">
-                <Users className="w-10 h-10 text-muted-foreground" />
-                <p className="text-foreground font-medium">Nenhum cliente encontrado</p>
-                <p className="text-sm text-muted-foreground">
-                  {busca ? 'Tente outra busca.' : 'Os clientes cadastrados aparecerão aqui.'}
-                </p>
+      {/* ── Stat cards ── */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        {[
+          {
+            label: 'Total',
+            value: clientes.length,
+            icon: Users,
+            iconBg: 'bg-zinc-100 dark:bg-zinc-800/60',
+            iconColor: 'text-zinc-400',
+          },
+          {
+            label: 'Novos este mês',
+            value: metricas.novosEsteMes,
+            icon: UserPlus,
+            iconBg: 'bg-zinc-100 dark:bg-zinc-800/60',
+            iconColor: 'text-zinc-400',
+          },
+          {
+            label: 'Atendimentos',
+            value: metricas.totalConcluidos,
+            icon: TrendingUp,
+            iconBg: 'bg-emerald-50 dark:bg-emerald-500/20',
+            iconColor: 'text-emerald-300 dark:text-emerald-400',
+          },
+          {
+            label: 'Receita total',
+            value: formatarMoeda(metricas.receitaTotal),
+            icon: DollarSign,
+            iconBg: 'bg-primary/10',
+            iconColor: 'text-primary',
+            isText: true,
+          },
+        ].map(card => {
+          const Icon = card.icon
+          return (
+            <div
+              key={card.label}
+              className="relative bg-card rounded-xl border border-border shadow-card p-5 flex flex-col items-center text-center gap-3 overflow-hidden"
+            >
+              <div className="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
+              <div className={cn('w-9 h-9 rounded-xl flex items-center justify-center', card.iconBg)}>
+                <Icon className={cn('w-4 h-4', card.iconColor)} />
               </div>
-            ) : (
-              <>
-                <div className="divide-y divide-border">
-                  {clientes.map((cliente) => (
+              <div>
+                <p className="text-[11px] font-extrabold text-foreground/70 uppercase tracking-widest font-gotham">{card.label}</p>
+                {card.isText ? (
+                  <p className="text-lg font-gotham font-black text-foreground mt-1">{card.value}</p>
+                ) : (
+                  <p className="text-2xl font-gotham font-black text-foreground tabular-nums leading-tight mt-1">{card.value}</p>
+                )}
+              </div>
+            </div>
+          )
+        })}
+      </div>
+
+      {/* ── Lista + Painel ── */}
+      <div className={cn(
+        'grid gap-5 transition-all',
+        selected ? 'grid-cols-1 lg:grid-cols-5' : 'grid-cols-1'
+      )}>
+
+        {/* Lista de clientes */}
+        <div className={selected ? 'lg:col-span-3' : ''}>
+          {search && (
+            <p className="text-xs text-muted-foreground mb-3 text-center">
+              {filtered.length} resultado{filtered.length !== 1 ? 's' : ''} para &quot;{search}&quot;
+            </p>
+          )}
+
+          {filtered.length === 0 ? (
+            <div className="bg-card border border-border rounded-2xl p-16 flex flex-col items-center text-center gap-3">
+              <Users className="w-10 h-10 text-muted-foreground/30" />
+              <p className="text-sm font-semibold text-muted-foreground">
+                {search ? 'Nenhum cliente encontrado' : 'Nenhum cliente cadastrado ainda'}
+              </p>
+            </div>
+          ) : (
+            <div className="bg-card border border-border rounded-2xl overflow-hidden">
+              <div className="divide-y divide-border">
+                {filtered.map(cliente => {
+                  const stats = statsMap[cliente.id]
+                  const isActive = selected?.id === cliente.id
+                  const color = avatarColor(cliente.nome)
+
+                  return (
                     <button
                       key={cliente.id}
-                      onClick={() => setSelectedCliente(
-                        selectedCliente?.id === cliente.id ? null : cliente
+                      onClick={() => setSelected(isActive ? null : cliente)}
+                      className={cn(
+                        'w-full px-5 py-4 flex items-center gap-4 text-left transition-all duration-150 hover:bg-muted/40',
+                        isActive && 'bg-primary/5 border-l-2 border-primary'
                       )}
-                      className={`w-full px-5 py-4 flex items-center gap-4 text-left hover:bg-secondary/30 transition-colors ${
-                        selectedCliente?.id === cliente.id ? 'bg-amber-500/5 border-l-2 border-amber-500' : ''
-                      }`}
                     >
-                      <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center flex-shrink-0">
-                        <span className="text-sm font-semibold text-foreground">
-                          {cliente.nome.charAt(0).toUpperCase()}
-                        </span>
+                      {/* Avatar */}
+                      <div className={cn(
+                        'w-10 h-10 rounded-xl flex items-center justify-center shrink-0 font-gotham font-black text-sm',
+                        color
+                      )}>
+                        {cliente.nome.charAt(0).toUpperCase()}
                       </div>
+
+                      {/* Info principal */}
                       <div className="min-w-0 flex-1">
-                        <p className="font-medium text-foreground text-sm">{cliente.nome}</p>
+                        <p className="font-semibold text-foreground text-sm truncate">{cliente.nome}</p>
                         <div className="flex items-center gap-1 mt-0.5">
-                          <Phone className="w-3 h-3 text-muted-foreground" />
+                          <Phone className="w-3 h-3 text-muted-foreground shrink-0" />
                           <p className="text-xs text-muted-foreground">{formatarTelefone(cliente.telefone)}</p>
                         </div>
                       </div>
-                      <p className="text-xs text-muted-foreground flex-shrink-0">
-                        desde {formatarData(cliente.criado_em)}
-                      </p>
+
+                      {/* Stats pills */}
+                      <div className="flex flex-col items-end gap-1 shrink-0">
+                        {stats && stats.concluidos > 0 ? (
+                          <>
+                            <span className="text-xs font-bold text-primary font-gotham">
+                              {stats.concluidos}x
+                            </span>
+                            <span className="text-[10px] text-muted-foreground font-semibold">
+                              {formatarMoeda(stats.totalGasto)}
+                            </span>
+                          </>
+                        ) : (
+                          <span className="text-[10px] text-muted-foreground/50 font-semibold">
+                            sem visitas
+                          </span>
+                        )}
+                      </div>
                     </button>
-                  ))}
-                </div>
-
-                {/* Pagination */}
-                {totalPages > 1 && (
-                  <div className="px-4 py-3 border-t border-border flex items-center justify-between">
-                    <p className="text-sm text-muted-foreground">
-                      Página {pagina} de {totalPages}
-                    </p>
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => goToPage(pagina - 1)}
-                        disabled={pagina <= 1}
-                        className="p-1.5 rounded border border-border text-muted-foreground hover:text-foreground disabled:opacity-40 disabled:cursor-not-allowed"
-                      >
-                        <ChevronLeft className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => goToPage(pagina + 1)}
-                        disabled={pagina >= totalPages}
-                        className="p-1.5 rounded border border-border text-muted-foreground hover:text-foreground disabled:opacity-40 disabled:cursor-not-allowed"
-                      >
-                        <ChevronRight className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </>
-            )}
-          </div>
-        </div>
-
-        {/* Histórico */}
-        <div>
-          {selectedCliente ? (
-            <HistoricoCliente cliente={selectedCliente} />
-          ) : (
-            <div className="bg-card border border-border rounded-xl p-8 flex flex-col items-center text-center space-y-2">
-              <Users className="w-8 h-8 text-muted-foreground" />
-              <p className="text-sm text-muted-foreground">
-                Selecione um cliente para ver seu histórico
-              </p>
+                  )
+                })}
+              </div>
             </div>
           )}
         </div>
+
+        {/* Painel de detalhe */}
+        {selected && (
+          <div className="lg:col-span-2">
+            <ClienteDetalhe
+              cliente={selected}
+              stats={statsMap[selected.id] ?? { total: 0, concluidos: 0, totalGasto: 0, ultimaVisita: null, servicos: [] }}
+              onClose={() => setSelected(null)}
+            />
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+// ── Painel de detalhe ─────────────────────────────────────────────────────────
+
+interface ClienteDetalheProps {
+  cliente: Cliente
+  stats: {
+    total: number
+    concluidos: number
+    totalGasto: number
+    ultimaVisita: string | null
+    servicos: AgendamentoComRelacoes[]
+  }
+  onClose: () => void
+}
+
+function ClienteDetalhe({ cliente, stats, onClose }: ClienteDetalheProps) {
+  const color = avatarColor(cliente.nome)
+
+  return (
+    <div className="bg-card border border-border rounded-2xl overflow-hidden sticky top-20">
+
+      {/* Header do cliente */}
+      <div className="px-5 py-4 border-b border-border">
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className={cn(
+              'w-12 h-12 rounded-xl flex items-center justify-center shrink-0 font-gotham font-black text-lg',
+              color
+            )}>
+              {cliente.nome.charAt(0).toUpperCase()}
+            </div>
+            <div>
+              <p className="font-gotham font-black text-foreground">{cliente.nome}</p>
+              <div className="flex items-center gap-1 mt-0.5">
+                <Phone className="w-3 h-3 text-muted-foreground" />
+                <p className="text-xs text-muted-foreground">{formatarTelefone(cliente.telefone)}</p>
+              </div>
+            </div>
+          </div>
+          <button
+            onClick={onClose}
+            className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-all active:scale-95 shrink-0"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+
+        {/* Mini stats */}
+        <div className="grid grid-cols-3 gap-2 mt-4">
+          {[
+            { label: 'Visitas', value: stats.concluidos, icon: CheckCircle, color: 'text-emerald-400' },
+            { label: 'Gasto', value: formatarMoeda(stats.totalGasto), icon: DollarSign, color: 'text-primary' },
+            {
+              label: 'Última',
+              value: stats.ultimaVisita
+                ? format(new Date(stats.ultimaVisita), 'dd/MM/yy')
+                : '—',
+              icon: Clock,
+              color: 'text-muted-foreground',
+            },
+          ].map(item => {
+            const Icon = item.icon
+            return (
+              <div key={item.label} className="bg-muted/40 rounded-xl p-3 text-center">
+                <Icon className={cn('w-4 h-4 mx-auto mb-1', item.color)} />
+                <p className="text-xs font-bold text-foreground truncate">{item.value}</p>
+                <p className="text-[10px] text-muted-foreground mt-0.5 font-gotham uppercase tracking-wide">{item.label}</p>
+              </div>
+            )
+          })}
+        </div>
+      </div>
+
+      {/* Histórico */}
+      <div className="px-5 py-4">
+        <p className="text-[10px] font-extrabold text-muted-foreground uppercase tracking-widest font-gotham mb-3">
+          Histórico de visitas
+        </p>
+
+        {stats.servicos.length === 0 ? (
+          <div className="flex flex-col items-center py-8 text-muted-foreground gap-2">
+            <CalendarDays className="w-7 h-7 opacity-25" />
+            <p className="text-xs">Nenhum agendamento ainda</p>
+          </div>
+        ) : (
+          <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
+            {stats.servicos.map((a, i) => (
+              <div
+                key={a.id ?? i}
+                className="flex items-center gap-3 py-2.5 border-b border-border/40 last:border-0"
+              >
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-semibold text-foreground truncate">
+                    {a.servicos?.nome ?? 'Serviço'}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {format(new Date(a.data_hora), "dd 'de' MMM yyyy · HH:mm", { locale: ptBR })}
+                  </p>
+                </div>
+                <div className="flex flex-col items-end gap-1 shrink-0">
+                  <span className={cn(
+                    'text-[10px] font-bold font-gotham uppercase px-2 py-0.5 rounded-lg border',
+                    STATUS_COLORS[a.status]
+                  )}>
+                    {STATUS_LABELS[a.status]}
+                  </span>
+                  {a.servicos?.preco && a.status === 'concluido' && (
+                    <span className="text-[10px] font-bold text-primary">
+                      {formatarMoeda(a.servicos.preco)}
+                    </span>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Observações */}
+      {cliente.observacoes && (
+        <div className="px-5 py-3 border-t border-border bg-muted/20">
+          <p className="text-[10px] font-extrabold text-muted-foreground uppercase tracking-widest font-gotham mb-1.5">
+            Observações
+          </p>
+          <p className="text-sm text-foreground/80 leading-relaxed">{cliente.observacoes}</p>
+        </div>
+      )}
+
+      {/* Cliente desde */}
+      <div className="px-5 py-3 border-t border-border">
+        <p className="text-[10px] text-muted-foreground/60 text-center">
+          Cliente desde {format(new Date(cliente.criado_em), "MMMM 'de' yyyy", { locale: ptBR })}
+        </p>
       </div>
     </div>
   )
