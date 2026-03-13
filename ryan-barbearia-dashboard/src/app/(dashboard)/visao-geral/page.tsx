@@ -100,7 +100,7 @@ export default async function VisaoGeralPage({
   const labelCapitalizado = label.charAt(0).toUpperCase() + label.slice(1)
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 animate-fade-up">
       {/* Header — centralizado */}
       <div className="flex flex-col items-center text-center gap-3">
         <div>

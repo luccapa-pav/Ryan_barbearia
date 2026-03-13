@@ -70,7 +70,7 @@
   ::-webkit-scrollbar-thumb:hover { background: hsl(var(--muted-foreground) / 0.4); }
 
   @keyframes fade-up {
-    from { opacity: 0; transform: translateY(10px); }
+    from { opacity: 0; transform: translateY(8px); }
     to   { opacity: 1; transform: translateY(0); }
   }
   @keyframes shimmer {
@@ -87,7 +87,7 @@
 
 @layer utilities {
   .animate-fade-up {
-    animation: fade-up 0.25s ease-out both;
+    animation: fade-up 0.2s cubic-bezier(0.16, 1, 0.3, 1) both;
   }
   .animate-status-flash {
     animation: status-flash 1.8s ease-out both;
