@@ -431,35 +431,48 @@ function NovoClienteModal({ onClose }: { onClose: () => void }) {
     }
   }
 
-  const inputClass = 'w-full px-3 py-2.5 rounded-xl bg-background border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 transition-all'
-  const labelClass = 'text-xs font-extrabold text-foreground/70 uppercase tracking-widest font-gotham'
+  const color = nome ? avatarColor(nome) : 'bg-muted text-muted-foreground'
 
   return (
     <>
-      <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-40" onClick={onClose} />
+      <div className="fixed inset-0 bg-black/75 backdrop-blur-sm z-40" onClick={onClose} />
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
         <div
-          className="pointer-events-auto w-full max-w-md bg-card rounded-2xl border border-border shadow-2xl flex flex-col animate-fade-up"
+          className="pointer-events-auto w-full max-w-sm bg-card rounded-2xl border border-border shadow-2xl flex flex-col animate-fade-up"
           onClick={e => e.stopPropagation()}
         >
-          {/* Header */}
-          <div className="relative px-6 py-4 border-b border-border flex items-center justify-between">
-            <div className="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-primary via-primary/80 to-primary rounded-t-2xl" />
-            <div>
-              <p className="text-[10px] font-extrabold text-primary uppercase tracking-widest font-gotham">Novo</p>
-              <h2 className="font-gotham font-black text-foreground text-xl">Cliente</h2>
+          {/* Faixa laranja topo */}
+          <div className="h-1 bg-gradient-to-r from-primary via-primary/80 to-primary rounded-t-2xl" />
+
+          {/* Header com avatar preview */}
+          <div className="px-6 pt-5 pb-4 flex items-center justify-between border-b border-border">
+            <div className="flex items-center gap-3">
+              <div className={cn(
+                'w-11 h-11 rounded-xl flex items-center justify-center font-gotham font-black text-base transition-all duration-200',
+                color
+              )}>
+                {nome ? nome.charAt(0).toUpperCase() : <Users className="w-5 h-5 opacity-40" />}
+              </div>
+              <div>
+                <p className="text-[10px] font-extrabold text-primary uppercase tracking-widest font-gotham">Novo</p>
+                <p className="font-gotham font-black text-foreground text-lg leading-tight">
+                  {nome.trim() || 'Cliente'}
+                </p>
+              </div>
             </div>
             <button
               onClick={onClose}
-              className="p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted transition-all active:scale-95"
+              className="p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-all active:scale-95"
             >
-              <X className="w-5 h-5" />
+              <X className="w-4 h-4" />
             </button>
           </div>
 
-          <form onSubmit={handleSubmit} className="p-6 space-y-4">
-            <div className="space-y-1.5">
-              <label className={labelClass}>Nome *</label>
+          <form onSubmit={handleSubmit} className="p-6 space-y-3">
+
+            {/* Nome */}
+            <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-muted/40 border border-border/60 focus-within:border-primary/40 transition-colors">
+              <Users className="w-4 h-4 text-muted-foreground shrink-0" />
               <input
                 type="text"
                 value={nome}
@@ -467,45 +480,48 @@ function NovoClienteModal({ onClose }: { onClose: () => void }) {
                 placeholder="Nome completo"
                 required
                 autoFocus
-                className={inputClass}
+                className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
               />
             </div>
 
-            <div className="space-y-1.5">
-              <label className={labelClass}>Telefone / WhatsApp *</label>
+            {/* Telefone */}
+            <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-muted/40 border border-border/60 focus-within:border-primary/40 transition-colors">
+              <Phone className="w-4 h-4 text-muted-foreground shrink-0" />
               <input
                 type="tel"
                 value={telefone}
                 onChange={e => setTelefone(e.target.value)}
                 placeholder="(00) 00000-0000"
                 required
-                className={inputClass}
+                className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
               />
             </div>
 
-            <div className="space-y-1.5">
-              <label className={labelClass}>Observações</label>
+            {/* Observações */}
+            <div className="flex gap-3 px-4 py-3 rounded-xl bg-muted/40 border border-border/60 focus-within:border-primary/40 transition-colors">
+              <CalendarDays className="w-4 h-4 text-muted-foreground shrink-0 mt-0.5" />
               <textarea
                 value={observacoes}
                 onChange={e => setObservacoes(e.target.value)}
-                placeholder="Preferências, alergias, etc."
-                rows={3}
-                className={cn(inputClass, 'resize-none')}
+                placeholder="Observações (opcional)"
+                rows={2}
+                className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none resize-none"
               />
             </div>
 
-            <div className="flex gap-3 pt-1">
+            {/* Botões */}
+            <div className="flex gap-2 pt-1">
               <button
                 type="button"
                 onClick={onClose}
-                className="flex-1 py-3 rounded-xl border border-border text-sm font-semibold text-muted-foreground hover:text-foreground hover:bg-muted transition-all active:scale-95"
+                className="flex-1 py-2.5 rounded-xl bg-muted/60 hover:bg-muted text-sm font-semibold text-muted-foreground hover:text-foreground transition-all active:scale-95 border border-border/50"
               >
                 Cancelar
               </button>
               <button
                 type="submit"
                 disabled={loading || !nome.trim() || !telefone.trim()}
-                className="flex-1 py-3 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-sm transition-all active:scale-95 hover:scale-[1.02] disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100 font-gotham uppercase tracking-wide"
+                className="flex-1 py-2.5 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-sm transition-all active:scale-95 hover:scale-[1.02] disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100 font-gotham uppercase tracking-wide shadow-sm"
               >
                 {loading ? 'Salvando...' : 'Cadastrar'}
               </button>
