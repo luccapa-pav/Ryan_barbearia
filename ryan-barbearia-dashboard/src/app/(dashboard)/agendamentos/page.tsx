@@ -22,17 +22,11 @@ export default async function AgendamentosPage({ searchParams }: AgendamentosPag
 
   let query = supabase
     .from('agendamentos')
-    .select(`
-      *,
-      clientes (id, nome, telefone),
-      servicos (id, nome, duracao_minutos, preco)
-    `, { count: 'exact' })
+    .select('*, clientes (id, nome, telefone), servicos (id, nome, duracao_minutos, preco)', { count: 'exact' })
     .order('data_hora', { ascending: false })
     .range(offset, offset + pageSize - 1)
 
-  if (params.status) {
-    query = query.eq('status', params.status)
-  }
+  if (params.status) query = query.eq('status', params.status)
 
   if (params.data) {
     const nextDay = new Date(params.data)
@@ -42,14 +36,24 @@ export default async function AgendamentosPage({ searchParams }: AgendamentosPag
       .lt('data_hora', nextDay.toISOString().split('T')[0] + 'T00:00:00')
   }
 
-  const [agendamentosRes, servicosRes] = await Promise.all([
+  const [agendamentosRes, servicosRes, countsRes] = await Promise.all([
     query,
     supabase.from('servicos').select('*').eq('ativo', true).order('nome'),
+    supabase.from('agendamentos').select('status'),
   ])
 
   const agendamentos = (agendamentosRes.data ?? []) as AgendamentoComRelacoes[]
   const total = agendamentosRes.count ?? 0
   const servicos = (servicosRes.data ?? []) as Servico[]
+
+  const all = countsRes.data ?? []
+  const statusCounts = {
+    pendente:   all.filter(a => a.status === 'pendente').length,
+    confirmado: all.filter(a => a.status === 'confirmado').length,
+    concluido:  all.filter(a => a.status === 'concluido').length,
+    cancelado:  all.filter(a => a.status === 'cancelado').length,
+    faltou:     all.filter(a => a.status === 'faltou').length,
+  }
 
   return (
     <AgendamentosPageClient
@@ -58,6 +62,7 @@ export default async function AgendamentosPage({ searchParams }: AgendamentosPag
       total={total}
       pagina={pagina}
       pageSize={pageSize}
+      statusCounts={statusCounts}
     />
   )
 }
