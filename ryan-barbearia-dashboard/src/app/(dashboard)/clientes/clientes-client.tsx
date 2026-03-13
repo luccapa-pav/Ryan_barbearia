@@ -1,10 +1,12 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import { Search, Users, UserPlus, TrendingUp, DollarSign, Phone, X, Clock, CheckCircle, CalendarDays } from 'lucide-react'
+import { Search, Users, UserPlus, CalendarCheck, Phone, X, Clock, CheckCircle, CalendarDays, Plus, DollarSign } from 'lucide-react'
 import { format, isThisMonth } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
+import { toast } from 'sonner'
 import { formatarMoeda, formatarTelefone, STATUS_COLORS, STATUS_LABELS, cn } from '@/lib/utils'
+import { criarCliente } from '@/actions/clientes'
 import type { Cliente, AgendamentoComRelacoes } from '@/lib/supabase/types'
 
 interface ClientesPageClientProps {
@@ -32,6 +34,7 @@ function avatarColor(nome: string) {
 export function ClientesPageClient({ clientes, agendamentos }: ClientesPageClientProps) {
   const [search, setSearch]               = useState('')
   const [selected, setSelected]           = useState<Cliente | null>(null)
+  const [novoOpen, setNovoOpen]           = useState(false)
 
   // Stats por cliente — computado uma vez
   const statsMap = useMemo(() => {
@@ -83,13 +86,20 @@ export function ClientesPageClient({ clientes, agendamentos }: ClientesPageClien
     <div className="space-y-6 animate-fade-up">
 
       {/* ── Header ── */}
-      <div className="flex flex-col items-center text-center gap-3">
+      <div className="relative flex flex-col items-center text-center gap-3">
         <div>
           <h2 className="text-5xl font-gotham font-black text-foreground tracking-tight">Clientes</h2>
           <p className="text-base font-semibold text-muted-foreground tracking-wide mt-1">
             {clientes.length} cliente{clientes.length !== 1 ? 's' : ''} cadastrado{clientes.length !== 1 ? 's' : ''}
           </p>
         </div>
+        <button
+          onClick={() => setNovoOpen(true)}
+          className="absolute right-0 top-0 flex items-center gap-2 px-5 py-2.5 bg-primary hover:bg-primary/90 text-primary-foreground font-bold rounded-xl transition-all duration-200 text-sm shadow-sm hover:scale-105 active:scale-95 font-gotham uppercase tracking-wide"
+        >
+          <Plus className="w-4 h-4" />
+          <span className="hidden sm:inline">Novo</span>
+        </button>
 
         {/* Busca centralizada */}
         <div className="relative w-full max-w-sm">
@@ -113,7 +123,7 @@ export function ClientesPageClient({ clientes, agendamentos }: ClientesPageClien
       </div>
 
       {/* ── Stat cards ── */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      <div className="grid grid-cols-3 gap-3">
         {[
           {
             label: 'Total',
@@ -132,17 +142,9 @@ export function ClientesPageClient({ clientes, agendamentos }: ClientesPageClien
           {
             label: 'Atendimentos',
             value: metricas.totalConcluidos,
-            icon: TrendingUp,
+            icon: CalendarCheck,
             iconBg: 'bg-emerald-50 dark:bg-emerald-500/20',
             iconColor: 'text-emerald-300 dark:text-emerald-400',
-          },
-          {
-            label: 'Receita total',
-            value: formatarMoeda(metricas.receitaTotal),
-            icon: DollarSign,
-            iconBg: 'bg-primary/10',
-            iconColor: 'text-primary',
-            isText: true,
           },
         ].map(card => {
           const Icon = card.icon
@@ -157,16 +159,16 @@ export function ClientesPageClient({ clientes, agendamentos }: ClientesPageClien
               </div>
               <div>
                 <p className="text-[11px] font-extrabold text-foreground/70 uppercase tracking-widest font-gotham">{card.label}</p>
-                {card.isText ? (
-                  <p className="text-lg font-gotham font-black text-foreground mt-1">{card.value}</p>
-                ) : (
-                  <p className="text-2xl font-gotham font-black text-foreground tabular-nums leading-tight mt-1">{card.value}</p>
-                )}
+                <p className="text-2xl font-gotham font-black text-foreground tabular-nums leading-tight mt-1">{card.value}</p>
               </div>
             </div>
           )
         })}
       </div>
+
+      {novoOpen && (
+        <NovoClienteModal onClose={() => setNovoOpen(false)} />
+      )}
 
       {/* ── Lista + Painel ── */}
       <div className={cn(
@@ -397,5 +399,120 @@ function ClienteDetalhe({ cliente, stats, onClose }: ClienteDetalheProps) {
         </p>
       </div>
     </div>
+  )
+}
+
+// ── Modal Novo Cliente ────────────────────────────────────────────────────────
+
+function NovoClienteModal({ onClose }: { onClose: () => void }) {
+  const [nome, setNome]               = useState('')
+  const [telefone, setTelefone]       = useState('')
+  const [observacoes, setObservacoes] = useState('')
+  const [loading, setLoading]         = useState(false)
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    if (!nome.trim() || !telefone.trim()) return
+    setLoading(true)
+    try {
+      const result = await criarCliente({
+        nome: nome.trim(),
+        telefone: telefone.trim(),
+        observacoes: observacoes.trim() || null,
+      })
+      if (result.success) {
+        toast.success('Cliente cadastrado!')
+        onClose()
+      } else {
+        toast.error(result.error ?? 'Erro ao cadastrar')
+      }
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const inputClass = 'w-full px-3 py-2.5 rounded-xl bg-background border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 transition-all'
+  const labelClass = 'text-xs font-extrabold text-foreground/70 uppercase tracking-widest font-gotham'
+
+  return (
+    <>
+      <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-40" onClick={onClose} />
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
+        <div
+          className="pointer-events-auto w-full max-w-md bg-card rounded-2xl border border-border shadow-2xl flex flex-col animate-fade-up"
+          onClick={e => e.stopPropagation()}
+        >
+          {/* Header */}
+          <div className="relative px-6 py-4 border-b border-border flex items-center justify-between">
+            <div className="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-primary via-primary/80 to-primary rounded-t-2xl" />
+            <div>
+              <p className="text-[10px] font-extrabold text-primary uppercase tracking-widest font-gotham">Novo</p>
+              <h2 className="font-gotham font-black text-foreground text-xl">Cliente</h2>
+            </div>
+            <button
+              onClick={onClose}
+              className="p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted transition-all active:scale-95"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+
+          <form onSubmit={handleSubmit} className="p-6 space-y-4">
+            <div className="space-y-1.5">
+              <label className={labelClass}>Nome *</label>
+              <input
+                type="text"
+                value={nome}
+                onChange={e => setNome(e.target.value)}
+                placeholder="Nome completo"
+                required
+                autoFocus
+                className={inputClass}
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <label className={labelClass}>Telefone / WhatsApp *</label>
+              <input
+                type="tel"
+                value={telefone}
+                onChange={e => setTelefone(e.target.value)}
+                placeholder="(00) 00000-0000"
+                required
+                className={inputClass}
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <label className={labelClass}>Observações</label>
+              <textarea
+                value={observacoes}
+                onChange={e => setObservacoes(e.target.value)}
+                placeholder="Preferências, alergias, etc."
+                rows={3}
+                className={cn(inputClass, 'resize-none')}
+              />
+            </div>
+
+            <div className="flex gap-3 pt-1">
+              <button
+                type="button"
+                onClick={onClose}
+                className="flex-1 py-3 rounded-xl border border-border text-sm font-semibold text-muted-foreground hover:text-foreground hover:bg-muted transition-all active:scale-95"
+              >
+                Cancelar
+              </button>
+              <button
+                type="submit"
+                disabled={loading || !nome.trim() || !telefone.trim()}
+                className="flex-1 py-3 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-sm transition-all active:scale-95 hover:scale-[1.02] disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100 font-gotham uppercase tracking-wide"
+              >
+                {loading ? 'Salvando...' : 'Cadastrar'}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </>
   )
 }
