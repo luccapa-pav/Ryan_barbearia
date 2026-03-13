@@ -8,10 +8,10 @@ interface GraficoStatusProps {
 }
 
 const STATUS_ITEMS = [
-  { key: '1', label: 'Inicial',    pct_color: 'bg-muted-foreground/30' },
-  { key: '2', label: 'Escolhendo', pct_color: 'bg-primary/40' },
-  { key: '3', label: 'Negociando', pct_color: 'bg-primary/65' },
-  { key: '4', label: 'Confirmado', pct_color: 'bg-primary' },
+  { key: '1', label: 'Inicial',    bar: 'bg-muted-foreground/40' },
+  { key: '2', label: 'Escolhendo', bar: 'bg-primary/40' },
+  { key: '3', label: 'Negociando', bar: 'bg-primary/70' },
+  { key: '4', label: 'Confirmado', bar: 'bg-primary' },
 ]
 
 export function GraficoStatus({ leads }: GraficoStatusProps) {
@@ -36,18 +36,22 @@ export function GraficoStatus({ leads }: GraficoStatusProps) {
 
   const maxServico = topServicos[0]?.[1] ?? 1
 
+  const panelClass =
+    'group bg-card rounded-xl border border-border hover:border-primary/35 shadow-card hover:shadow-elevated transition-all duration-200 hover:scale-[1.015] hover:-translate-y-0.5 p-5 space-y-4 overflow-hidden relative cursor-default'
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
 
-      {/* Funil de conversas */}
-      <div className="group bg-card rounded-xl border border-border hover:border-primary/20 shadow-card hover:shadow-elevated transition-all duration-200 p-5 space-y-4">
+      {/* Funil */}
+      <div className={panelClass}>
+        <div className="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-transparent via-primary to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
         <div className="flex items-center gap-2">
-          <span className="w-0.5 h-3.5 rounded-full bg-primary inline-block" />
+          <span className="w-1 h-4 rounded-full bg-primary" />
           <div>
-            <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-widest">
+            <p className="text-xs font-bold text-foreground uppercase tracking-widest font-gotham">
               Funil de Conversas
             </p>
-            <p className="text-xs text-muted-foreground mt-0.5">Etapas do bot João</p>
+            <p className="text-[11px] text-muted-foreground mt-0.5">Etapas do bot João</p>
           </div>
         </div>
 
@@ -57,18 +61,18 @@ export function GraficoStatus({ leads }: GraficoStatusProps) {
           </div>
         ) : (
           <div className="space-y-3 pt-1">
-            {porStatus.map(({ key, label, pct_color, count }) => {
+            {porStatus.map(({ key, label, bar, count }) => {
               const pct = total > 0 ? (count / total) * 100 : 0
               return (
                 <div key={key} className="flex items-center gap-3">
-                  <span className="text-xs text-muted-foreground w-20 shrink-0">{label}</span>
-                  <div className="flex-1 bg-muted/50 rounded-full h-1.5 overflow-hidden">
+                  <span className="text-xs font-medium text-muted-foreground w-20 shrink-0">{label}</span>
+                  <div className="flex-1 bg-muted/60 rounded-full h-2 overflow-hidden">
                     <div
-                      className={`h-1.5 rounded-full transition-all duration-700 ease-out ${pct_color}`}
+                      className={`h-2 rounded-full transition-all duration-700 ease-out ${bar}`}
                       style={{ width: `${count > 0 ? Math.max(pct, 3) : 0}%` }}
                     />
                   </div>
-                  <span className="text-xs font-semibold text-foreground w-5 text-right tabular-nums">
+                  <span className="text-sm font-black text-foreground w-6 text-right tabular-nums font-gotham">
                     {count}
                   </span>
                 </div>
@@ -79,14 +83,15 @@ export function GraficoStatus({ leads }: GraficoStatusProps) {
       </div>
 
       {/* Top serviços */}
-      <div className="group bg-card rounded-xl border border-border hover:border-primary/20 shadow-card hover:shadow-elevated transition-all duration-200 p-5 space-y-4">
+      <div className={panelClass}>
+        <div className="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-transparent via-primary to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
         <div className="flex items-center gap-2">
-          <span className="w-0.5 h-3.5 rounded-full bg-primary inline-block" />
+          <span className="w-1 h-4 rounded-full bg-primary" />
           <div>
-            <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-widest">
+            <p className="text-xs font-bold text-foreground uppercase tracking-widest font-gotham">
               Serviços Mais Pedidos
             </p>
-            <p className="text-xs text-muted-foreground mt-0.5">Extraído das conversas</p>
+            <p className="text-[11px] text-muted-foreground mt-0.5">Extraído das conversas</p>
           </div>
         </div>
 
@@ -101,18 +106,18 @@ export function GraficoStatus({ leads }: GraficoStatusProps) {
               return (
                 <div key={nome} className="flex items-center gap-3">
                   <div className="flex items-center gap-1.5 w-32 shrink-0">
-                    <span className="text-[10px] font-bold text-primary/60 tabular-nums w-3">
-                      {i + 1}
+                    <span className="text-xs font-black text-primary tabular-nums font-gotham">
+                      {i + 1}.
                     </span>
-                    <span className="text-xs text-muted-foreground truncate">{nome}</span>
+                    <span className="text-xs font-medium text-muted-foreground truncate">{nome}</span>
                   </div>
-                  <div className="flex-1 bg-muted/50 rounded-full h-1.5 overflow-hidden">
+                  <div className="flex-1 bg-muted/60 rounded-full h-2 overflow-hidden">
                     <div
-                      className="h-1.5 rounded-full bg-primary transition-all duration-700 ease-out"
+                      className="h-2 rounded-full bg-primary transition-all duration-700 ease-out"
                       style={{ width: `${pct}%` }}
                     />
                   </div>
-                  <span className="text-xs font-semibold text-foreground w-5 text-right tabular-nums">
+                  <span className="text-sm font-black text-foreground w-6 text-right tabular-nums font-gotham">
                     {count}
                   </span>
                 </div>

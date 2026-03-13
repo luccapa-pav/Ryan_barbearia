@@ -1,33 +1,33 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;600;700&family=Montserrat:wght@600;700;800;900&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
-  /* ── Light theme ── */
+  /* ── Light theme (padrão) ── */
   :root {
-    --background: 220 16% 96%;
-    --foreground: 220 15% 10%;
+    --background: 220 20% 97%;
+    --foreground: 220 20% 8%;
     --card: 0 0% 100%;
-    --card-foreground: 220 15% 10%;
-    --border: 220 13% 90%;
-    --input: 220 13% 88%;
-    --ring: 25 85% 52%;
-    --primary: 25 85% 52%;
+    --card-foreground: 220 20% 8%;
+    --border: 220 15% 88%;
+    --input: 220 15% 86%;
+    --ring: 25 95% 50%;
+    --primary: 25 95% 50%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 220 14% 93%;
-    --secondary-foreground: 220 15% 20%;
-    --muted: 220 14% 93%;
-    --muted-foreground: 220 10% 50%;
-    --accent: 220 14% 93%;
-    --accent-foreground: 220 15% 20%;
-    --destructive: 0 72% 51%;
+    --secondary: 220 15% 94%;
+    --secondary-foreground: 220 20% 20%;
+    --muted: 220 15% 94%;
+    --muted-foreground: 220 12% 46%;
+    --accent: 220 15% 94%;
+    --accent-foreground: 220 20% 20%;
+    --destructive: 0 78% 52%;
     --destructive-foreground: 0 0% 100%;
     --radius: 0.75rem;
   }
 
-  /* ── Dark theme (Sombrear) ── */
+  /* ── Dark theme ── */
   .dark {
     --background: 222 25% 8%;
     --foreground: 220 15% 92%;
@@ -35,8 +35,8 @@
     --card-foreground: 220 15% 92%;
     --border: 222 18% 20%;
     --input: 222 18% 20%;
-    --ring: 25 85% 52%;
-    --primary: 25 85% 52%;
+    --ring: 25 95% 50%;
+    --primary: 25 95% 50%;
     --primary-foreground: 0 0% 100%;
     --secondary: 222 20% 18%;
     --secondary-foreground: 220 15% 80%;
@@ -51,7 +51,6 @@
 
   * { @apply border-border; }
 
-  /* Prevent theme flash during transition */
   html { scroll-behavior: smooth; }
   html.no-transition * { transition: none !important; }
 
@@ -70,45 +69,28 @@
   ::-webkit-scrollbar-thumb { background: hsl(var(--border)); border-radius: 99px; }
   ::-webkit-scrollbar-thumb:hover { background: hsl(var(--muted-foreground) / 0.4); }
 
-  @keyframes shimmer {
-    0%   { transform: translateX(-100%); }
-    100% { transform: translateX(400%); }
-  }
-
   @keyframes fade-up {
     from { opacity: 0; transform: translateY(10px); }
     to   { opacity: 1; transform: translateY(0); }
   }
-
-  @keyframes fade-in {
-    from { opacity: 0; }
-    to   { opacity: 1; }
-  }
-
-  @keyframes scale-in {
-    from { opacity: 0; transform: scale(0.97); }
-    to   { opacity: 1; transform: scale(1); }
+  @keyframes shimmer {
+    0%   { transform: translateX(-100%); }
+    100% { transform: translateX(400%); }
   }
 }
 
 @layer utilities {
-  .shimmer {
-    animation: shimmer 1.4s ease-out 0.6s 1 both;
-  }
   .animate-fade-up {
     animation: fade-up 0.25s ease-out both;
   }
-  .animate-fade-in {
-    animation: fade-in 0.2s ease-out both;
+  .shimmer {
+    animation: shimmer 1.4s ease-out 0.6s 1 both;
   }
-  .animate-scale-in {
-    animation: scale-in 0.2s ease-out both;
+  /* Gotham substitute — Montserrat */
+  .font-gotham {
+    font-family: 'Montserrat', 'Space Grotesk', system-ui, sans-serif;
   }
   .font-display {
     font-family: 'Space Grotesk', system-ui, sans-serif;
-  }
-  /* Subtle glow on primary elements */
-  .glow-primary {
-    box-shadow: 0 0 20px hsl(var(--primary) / 0.15);
   }
 }
