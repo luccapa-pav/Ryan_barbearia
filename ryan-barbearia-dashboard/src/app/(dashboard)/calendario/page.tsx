@@ -1,52 +1,25 @@
 import { createClient } from '@/lib/supabase/server'
-import { CalendarioPageClient } from './calendario-client'
-import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek } from 'date-fns'
+import { CalendarioClient } from './calendario-client'
 import type { AgendamentoComRelacoes } from '@/lib/supabase/types'
 
-export const dynamic = 'force-dynamic'
+export const revalidate = 3600
 
-interface CalendarioPageProps {
-  searchParams: Promise<{ mes?: string; semana?: string; view?: string }>
-}
-
-export default async function CalendarioPage({ searchParams }: CalendarioPageProps) {
+export default async function CalendarioPage() {
   const supabase = await createClient()
-  const params = await searchParams
 
-  const view = params.view ?? 'semana'
-  const hoje = new Date()
+  // Busca o ano corrente completo (com buffer de 1 mês em cada lado)
+  const now  = new Date()
+  const from = new Date(now.getFullYear(), 0, 1)           // Jan 1
+  const to   = new Date(now.getFullYear(), 11, 31, 23, 59, 59) // Dec 31
 
-  let dataInicio: Date
-  let dataFim: Date
-
-  if (view === 'mes') {
-    const mesRef = params.mes ? new Date(params.mes + '-01') : hoje
-    dataInicio = startOfMonth(mesRef)
-    dataFim = endOfMonth(mesRef)
-  } else {
-    const semanaRef = params.semana ? new Date(params.semana) : hoje
-    dataInicio = startOfWeek(semanaRef, { weekStartsOn: 0 })
-    dataFim = endOfWeek(semanaRef, { weekStartsOn: 0 })
-  }
-
-  const { data: agendamentos } = await supabase
+  const { data } = await supabase
     .from('agendamentos')
-    .select(`
-      *,
-      clientes (id, nome, telefone),
-      servicos (id, nome, duracao_minutos, preco)
-    `)
-    .gte('data_hora', dataInicio.toISOString())
-    .lte('data_hora', dataFim.toISOString())
-    .not('status', 'eq', 'cancelado')
+    .select('*, clientes (id, nome, telefone), servicos (id, nome, duracao_minutos, preco)')
+    .gte('data_hora', from.toISOString())
+    .lte('data_hora', to.toISOString())
     .order('data_hora', { ascending: true })
 
   return (
-    <CalendarioPageClient
-      agendamentos={(agendamentos ?? []) as AgendamentoComRelacoes[]}
-      view={view as 'semana' | 'mes'}
-      dataInicioStr={dataInicio.toISOString()}
-      dataFimStr={dataFim.toISOString()}
-    />
+    <CalendarioClient agendamentos={(data ?? []) as AgendamentoComRelacoes[]} />
   )
 }

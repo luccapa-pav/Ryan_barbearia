@@ -9,9 +9,9 @@ import { KeyboardShortcuts } from './keyboard-shortcuts'
 
 const TABS = [
   { href: '/visao-geral',   label: 'Visão Geral',   icon: CalendarCheck },
+  { href: '/calendario',    label: 'Calendário',    icon: Calendar },
   { href: '/agendamentos',  label: 'Agendamentos',  icon: CalendarDays },
   { href: '/clientes',      label: 'Clientes',      icon: Users },
-  { href: '/calendario',    label: 'Calendário',    icon: Calendar },
   { href: '/configuracoes', label: 'Configurações', icon: Settings },
 ]
 

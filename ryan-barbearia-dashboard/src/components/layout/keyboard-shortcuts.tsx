@@ -5,9 +5,9 @@ import { useRouter } from 'next/navigation'
 
 const TAB_KEYS: Record<string, string> = {
   '1': '/visao-geral',
-  '2': '/agendamentos',
-  '3': '/clientes',
-  '4': '/calendario',
+  '2': '/calendario',
+  '3': '/agendamentos',
+  '4': '/clientes',
   '5': '/configuracoes',
 }
 
@@ -22,7 +22,6 @@ export function KeyboardShortcuts() {
 
   useEffect(() => {
     function handleKey(e: KeyboardEvent) {
-      // Ignora quando foco está em input/textarea
       const tag = (e.target as HTMLElement).tagName
       if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return
       if (e.metaKey || e.ctrlKey || e.altKey) return
@@ -37,7 +36,9 @@ export function KeyboardShortcuts() {
 
       if (PERIODO_KEYS[key] && window.location.pathname === '/visao-geral') {
         e.preventDefault()
-        router.push(`/visao-geral?periodo=${PERIODO_KEYS[key]}`)
+        window.dispatchEvent(
+          new CustomEvent('visao-geral:periodo', { detail: { periodo: PERIODO_KEYS[key] } })
+        )
       }
     }
 
