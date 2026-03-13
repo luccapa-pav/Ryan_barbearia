@@ -192,14 +192,15 @@ export interface Database {
         }
       }
     }
-    Views: Record<string, never>
+    Views: Record<string, unknown>
     Functions: {
       limpar_sessoes_expiradas: {
         Args: Record<string, never>
         Returns: number
       }
     }
-    Enums: Record<string, never>
+    Enums: Record<string, unknown>
+    CompositeTypes: Record<string, unknown>
   }
 }
 

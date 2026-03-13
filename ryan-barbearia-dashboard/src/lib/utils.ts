@@ -75,11 +75,11 @@ export const STATUS_LABELS: Record<AgendamentoStatus, string> = {
 }
 
 export const STATUS_COLORS: Record<AgendamentoStatus, string> = {
-  pendente: 'bg-amber-500/15 text-amber-400 border-amber-500/30',
-  confirmado: 'bg-green-500/15 text-green-400 border-green-500/30',
-  cancelado: 'bg-red-500/15 text-red-400 border-red-500/30',
-  concluido: 'bg-blue-500/15 text-blue-400 border-blue-500/30',
-  faltou: 'bg-purple-500/15 text-purple-400 border-purple-500/30',
+  pendente:  'bg-amber-50  text-amber-700  border-amber-200',
+  confirmado:'bg-emerald-50 text-emerald-700 border-emerald-200',
+  cancelado: 'bg-red-50    text-red-600    border-red-200',
+  concluido: 'bg-blue-50   text-blue-700   border-blue-200',
+  faltou:    'bg-violet-50 text-violet-700 border-violet-200',
 }
 
 export const ORIGEM_LABELS: Record<string, string> = {

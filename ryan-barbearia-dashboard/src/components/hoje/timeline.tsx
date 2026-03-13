@@ -16,74 +16,51 @@ export function TimelineHoje({ agendamentosIniciais, hojeStr }: TimelineHojeProp
 
   useEffect(() => {
     const supabase = createClient()
-
-    // Subscribe to realtime changes for today's appointments
     const channel = supabase
       .channel('agendamentos-hoje')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'agendamentos',
-          filter: `data_hora=gte.${hojeStr}T00:00:00`,
-        },
-        async () => {
-          // Refetch on any change
-          const amanha = new Date(hojeStr)
-          amanha.setDate(amanha.getDate() + 1)
-          const amanhaStr = amanha.toISOString().split('T')[0]
-
-          const { data } = await supabase
-            .from('agendamentos')
-            .select(`
-              *,
-              clientes (id, nome, telefone),
-              servicos (id, nome, duracao_minutos, preco)
-            `)
-            .gte('data_hora', `${hojeStr}T00:00:00`)
-            .lt('data_hora', `${amanhaStr}T00:00:00`)
-            .not('status', 'eq', 'cancelado')
-            .order('data_hora', { ascending: true })
-
-          if (data) {
-            setAgendamentos(data as AgendamentoComRelacoes[])
-          }
-        }
-      )
+      .on('postgres_changes', {
+        event: '*', schema: 'public', table: 'agendamentos',
+        filter: `data_hora=gte.${hojeStr}T00:00:00`,
+      }, async () => {
+        const amanha = new Date(hojeStr)
+        amanha.setDate(amanha.getDate() + 1)
+        const { data } = await supabase
+          .from('agendamentos')
+          .select('*, clientes (id, nome, telefone), servicos (id, nome, duracao_minutos, preco)')
+          .gte('data_hora', `${hojeStr}T00:00:00`)
+          .lt('data_hora', `${amanha.toISOString().split('T')[0]}T00:00:00`)
+          .not('status', 'eq', 'cancelado')
+          .order('data_hora', { ascending: true })
+        if (data) setAgendamentos(data as AgendamentoComRelacoes[])
+      })
       .subscribe()
-
-    return () => {
-      supabase.removeChannel(channel)
-    }
+    return () => { supabase.removeChannel(channel) }
   }, [hojeStr])
 
   if (agendamentos.length === 0) {
     return (
-      <div className="bg-card border border-border rounded-xl p-12 flex flex-col items-center justify-center text-center space-y-3">
-        <div className="w-12 h-12 rounded-full bg-secondary flex items-center justify-center">
-          <CalendarOff className="w-6 h-6 text-muted-foreground" />
+      <div className="bg-card border border-border rounded-xl shadow-card p-12 flex flex-col items-center text-center gap-3">
+        <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center">
+          <CalendarOff className="w-5 h-5 text-muted-foreground" />
         </div>
-        <p className="font-medium text-foreground">Nenhum agendamento hoje</p>
-        <p className="text-sm text-muted-foreground">
-          Os agendamentos do dia aparecerão aqui em tempo real.
+        <p className="font-semibold text-foreground">Nenhum agendamento hoje</p>
+        <p className="text-sm text-muted-foreground max-w-xs">
+          Novos agendamentos via WhatsApp aparecerão aqui automaticamente.
         </p>
       </div>
     )
   }
 
   return (
-    <div className="bg-card border border-border rounded-xl overflow-hidden">
-      <div className="px-5 py-4 border-b border-border flex items-center justify-between">
-        <h3 className="font-semibold text-foreground">Agenda do dia</h3>
-        <span className="text-xs text-muted-foreground bg-secondary px-2 py-1 rounded-full">
+    <div className="bg-card border border-border rounded-xl shadow-card overflow-hidden">
+      <div className="px-5 py-3.5 border-b border-border flex items-center justify-between">
+        <h3 className="font-display font-semibold text-foreground text-sm">Agenda do dia</h3>
+        <span className="text-[11px] font-semibold text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
           {agendamentos.length} agendamento{agendamentos.length !== 1 ? 's' : ''}
         </span>
       </div>
       <div className="divide-y divide-border">
-        {agendamentos.map((agendamento) => (
-          <AgendamentoCard key={agendamento.id} agendamento={agendamento} />
-        ))}
+        {agendamentos.map(a => <AgendamentoCard key={a.id} agendamento={a} />)}
       </div>
     </div>
   )
