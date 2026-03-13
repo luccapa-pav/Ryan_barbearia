@@ -5,7 +5,7 @@ import { Scissors, CalendarCheck, CalendarDays, Users, Calendar, Settings, LogOu
 import { cn } from '@/lib/utils'
 
 const TABS = [
-  { href: '/hoje',          label: 'Hoje',           icon: CalendarCheck },
+  { href: '/visao-geral',   label: 'Visão Geral',    icon: CalendarCheck },
   { href: '/agendamentos',  label: 'Agendamentos',   icon: CalendarDays },
   { href: '/clientes',      label: 'Clientes',       icon: Users },
   { href: '/calendario',    label: 'Calendário',     icon: Calendar },

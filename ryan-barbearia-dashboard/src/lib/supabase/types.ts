@@ -191,6 +191,56 @@ export interface Database {
           atualizado_em?: string
         }
       }
+      ryan_gomes_barbearia: {
+        Row: {
+          id?: string
+          whatsapp: string
+          identificador_usuario: string
+          id_conta_chatwoot: string | null
+          id_conversa_chatwoot: string | null
+          id_lead_chatwoot: string | null
+          status: string | null
+          inicio_atendimento_em: string | null
+          timestamp_ultima_msg: string | null
+          nome: string | null
+          resumo_conversa: string | null
+          servicos: string | null
+          data_hora_agendada: string | null
+          valor_servico: string | null
+          barbeiro: string | null
+          resumo_perfil_cliente: string | null
+        }
+        Insert: {
+          whatsapp: string
+          identificador_usuario: string
+          id_conta_chatwoot?: string | null
+          id_conversa_chatwoot?: string | null
+          id_lead_chatwoot?: string | null
+          status?: string | null
+          inicio_atendimento_em?: string | null
+          timestamp_ultima_msg?: string | null
+          nome?: string | null
+          resumo_conversa?: string | null
+          servicos?: string | null
+          data_hora_agendada?: string | null
+          valor_servico?: string | null
+          barbeiro?: string | null
+          resumo_perfil_cliente?: string | null
+        }
+        Update: {
+          whatsapp?: string
+          identificador_usuario?: string
+          status?: string | null
+          timestamp_ultima_msg?: string | null
+          nome?: string | null
+          resumo_conversa?: string | null
+          servicos?: string | null
+          data_hora_agendada?: string | null
+          valor_servico?: string | null
+          barbeiro?: string | null
+          resumo_perfil_cliente?: string | null
+        }
+      }
     }
     Views: Record<string, unknown>
     Functions: {
@@ -228,6 +278,8 @@ export type AgendamentoUpdate = Database['public']['Tables']['agendamentos']['Up
 export type Configuracao = Database['public']['Tables']['configuracoes']['Row']
 
 export type SessaoWhatsapp = Database['public']['Tables']['sessoes_whatsapp']['Row']
+
+export type LeadCRM = Database['public']['Tables']['ryan_gomes_barbearia']['Row']
 
 // Extended types with joins
 export type AgendamentoComRelacoes = Agendamento & {
