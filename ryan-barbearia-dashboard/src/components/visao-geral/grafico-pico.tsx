@@ -46,14 +46,10 @@ export function GraficoStatus({ leads }: GraficoStatusProps) {
       <div className={panelClass}>
         <div className="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-transparent via-primary to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
         <div className="flex flex-col items-center text-center gap-0.5">
-          <div className="flex items-center gap-2">
-            <span className="w-1 h-4 rounded-full bg-primary" />
-            <p className="text-xs font-bold text-foreground uppercase tracking-widest font-gotham">
-              Funil de Conversas
-            </p>
-            <span className="w-1 h-4 rounded-full bg-primary" />
-          </div>
-          <p className="text-[11px] text-muted-foreground">Etapas do bot João</p>
+          <p className="text-sm font-gotham font-bold text-primary uppercase tracking-widest">
+            Funil de Conversas
+          </p>
+          <p className="text-[11px] text-muted-foreground">Etapas do Secretário João</p>
         </div>
 
         {total === 0 ? (
@@ -87,13 +83,9 @@ export function GraficoStatus({ leads }: GraficoStatusProps) {
       <div className={panelClass}>
         <div className="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-transparent via-primary to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
         <div className="flex flex-col items-center text-center gap-0.5">
-          <div className="flex items-center gap-2">
-            <span className="w-1 h-4 rounded-full bg-primary" />
-            <p className="text-xs font-bold text-foreground uppercase tracking-widest font-gotham">
-              Serviços Mais Pedidos
-            </p>
-            <span className="w-1 h-4 rounded-full bg-primary" />
-          </div>
+          <p className="text-sm font-gotham font-bold text-primary uppercase tracking-widest">
+            Serviços Mais Pedidos
+          </p>
           <p className="text-[11px] text-muted-foreground">Extraído das conversas</p>
         </div>
 

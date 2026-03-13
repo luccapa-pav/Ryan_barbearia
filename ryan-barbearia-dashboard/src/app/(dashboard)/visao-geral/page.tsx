@@ -103,10 +103,10 @@ export default async function VisaoGeralPage({
       {/* Header — centralizado */}
       <div className="flex flex-col items-center text-center gap-3">
         <div>
-          <p className="text-base font-semibold text-muted-foreground capitalize tracking-wide mb-1">
+          <h2 className="text-5xl font-gotham font-black text-foreground tracking-tight">Visão Geral</h2>
+          <p className="text-base font-semibold text-muted-foreground capitalize tracking-wide mt-1">
             {labelCapitalizado}
           </p>
-          <h2 className="text-5xl font-gotham font-black text-foreground tracking-tight">Visão Geral</h2>
         </div>
         <Suspense fallback={null}>
           <FiltroPeriodo />

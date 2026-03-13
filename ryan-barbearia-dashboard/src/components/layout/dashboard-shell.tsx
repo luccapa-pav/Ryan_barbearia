@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import {
   Scissors, CalendarCheck, CalendarDays,
@@ -72,11 +73,12 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
             {TABS.map(({ href, label, icon: Icon }) => {
               const active = pathname === href || pathname.startsWith(href + '/')
               return (
-                <button
+                <Link
                   key={href}
-                  onClick={() => router.push(href)}
+                  href={href}
+                  prefetch={true}
                   className={cn(
-                    'relative flex shrink-0 items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition-all duration-200 whitespace-nowrap active:scale-95 hover:scale-105',
+                    'relative flex shrink-0 items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition-all duration-150 whitespace-nowrap active:scale-95 hover:scale-105',
                     active
                       ? 'bg-card text-foreground shadow-card border border-border/80 scale-[1.02]'
                       : 'text-muted-foreground hover:text-foreground hover:bg-card/70'
@@ -87,7 +89,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
                   {active && (
                     <span className="absolute bottom-1 left-1/2 -translate-x-1/2 h-0.5 w-3 rounded-full bg-primary sm:hidden" />
                   )}
-                </button>
+                </Link>
               )
             })}
           </nav>
