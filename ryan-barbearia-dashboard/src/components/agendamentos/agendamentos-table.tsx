@@ -1,5 +1,6 @@
 'use client'
 
+import { useTransition } from 'react'
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import { Edit, CheckCircle, XCircle, ChevronLeft, ChevronRight, CalendarOff, Filter, X } from 'lucide-react'
 import { cn, formatarDataHora, formatarMoeda, STATUS_LABELS, STATUS_COLORS, ORIGEM_LABELS } from '@/lib/utils'
@@ -28,6 +29,7 @@ export function AgendamentosTable({ agendamentos, total, pagina, pageSize, onEdi
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
+  const [isPending, startTransition] = useTransition()
   const totalPages = Math.ceil(total / pageSize)
 
   const activeStatus = searchParams.get('status') ?? ''
@@ -38,7 +40,9 @@ export function AgendamentosTable({ agendamentos, total, pagina, pageSize, onEdi
     const params = new URLSearchParams(searchParams.toString())
     if (value) params.set(key, value); else params.delete(key)
     if (key !== 'pagina') params.delete('pagina')
-    router.push(`${pathname}?${params.toString()}`)
+    startTransition(() => {
+      router.push(`${pathname}?${params.toString()}`)
+    })
   }
 
   async function handleCancelar(id: string) {
@@ -63,7 +67,7 @@ export function AgendamentosTable({ agendamentos, total, pagina, pageSize, onEdi
   return (
     <div className="space-y-4">
       {/* Filtros */}
-      <div className="flex flex-wrap items-center gap-2">
+      <div className={cn('flex flex-wrap items-center gap-2 transition-opacity duration-200', isPending && 'opacity-60 pointer-events-none')}>
         <div className="flex items-center gap-1.5 text-xs font-bold text-muted-foreground uppercase tracking-widest font-gotham">
           <Filter className="w-3.5 h-3.5" />
           Filtros
@@ -122,7 +126,7 @@ export function AgendamentosTable({ agendamentos, total, pagina, pageSize, onEdi
       </div>
 
       {/* Tabela */}
-      <div className="bg-card rounded-xl border border-zinc-300 dark:border-zinc-600 shadow-card overflow-hidden">
+      <div className={cn('bg-card rounded-xl border border-zinc-300 dark:border-zinc-600 shadow-card overflow-hidden transition-opacity duration-200', isPending && 'opacity-50')}>
         {agendamentos.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 gap-3 text-center">
             <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center">

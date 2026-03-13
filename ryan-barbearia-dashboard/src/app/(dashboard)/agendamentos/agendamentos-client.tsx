@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Plus, CalendarDays } from 'lucide-react'
+import { Plus } from 'lucide-react'
 import { AgendamentoSheet } from '@/components/agendamentos/agendamento-sheet'
 import { AgendamentosTable } from '@/components/agendamentos/agendamentos-table'
 import type { AgendamentoComRelacoes, Servico } from '@/lib/supabase/types'
@@ -44,9 +44,9 @@ export function AgendamentosPageClient({
 
   return (
     <div className="space-y-6 animate-fade-up">
-      {/* Header centralizado — mesmo padrão da Visão Geral */}
-      <div className="flex flex-col items-center text-center gap-4">
-        <div>
+      {/* Header — título centralizado, botão à direita */}
+      <div className="relative flex items-center justify-center">
+        <div className="text-center">
           <h2 className="text-5xl font-gotham font-black text-foreground tracking-tight">Agendamentos</h2>
           <p className="text-base font-semibold text-muted-foreground tracking-wide mt-1">
             {total} agendamento{total !== 1 ? 's' : ''} no total
@@ -54,10 +54,10 @@ export function AgendamentosPageClient({
         </div>
         <button
           onClick={handleNew}
-          className="flex items-center gap-2 px-5 py-2.5 bg-primary hover:bg-primary/90 text-primary-foreground font-bold rounded-xl transition-all duration-200 text-sm shadow-brand hover:scale-105 active:scale-95 font-gotham uppercase tracking-wide"
+          className="absolute right-0 flex items-center gap-2 px-5 py-2.5 bg-primary hover:bg-primary/90 text-primary-foreground font-bold rounded-xl transition-all duration-200 text-sm shadow-brand hover:scale-105 active:scale-95 font-gotham uppercase tracking-wide"
         >
           <Plus className="w-4 h-4" />
-          Novo agendamento
+          <span className="hidden sm:inline">Novo</span>
         </button>
       </div>
 
