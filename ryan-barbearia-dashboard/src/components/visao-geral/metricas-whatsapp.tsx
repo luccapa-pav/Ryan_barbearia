@@ -10,7 +10,6 @@ interface MetricasWhatsappProps {
   leads: LeadCRM[]
 }
 
-// status: '1'=inicial, '2'=escolhendo serviço, '3'=negociando horário, '4'=confirmado
 export function MetricasWhatsapp({ leads }: MetricasWhatsappProps) {
   const total       = leads.length
   const confirmados = leads.filter(l => l.status === '4').length
@@ -23,59 +22,44 @@ export function MetricasWhatsapp({ leads }: MetricasWhatsappProps) {
       value: total.toString(),
       sub: 'via WhatsApp no período',
       icon: MessageCircle,
-      border: 'border-l-sky-500',
-      iconBg: 'bg-sky-500/10',
-      iconColor: 'text-sky-400',
     },
     {
       label: 'Confirmados',
       value: confirmados.toString(),
       sub: 'agendamentos pelo bot',
       icon: CalendarCheck,
-      border: 'border-l-emerald-500',
-      iconBg: 'bg-emerald-500/10',
-      iconColor: 'text-emerald-400',
     },
     {
       label: 'Em Andamento',
       value: andamento.toString(),
       sub: 'conversas em negociação',
       icon: Clock,
-      border: 'border-l-orange-500',
-      iconBg: 'bg-orange-500/10',
-      iconColor: 'text-orange-400',
     },
     {
       label: 'Taxa de Conversão',
       value: taxa !== null ? `${taxa}%` : '—',
       sub: 'conversas → agendamento',
       icon: TrendingUp,
-      border: 'border-l-violet-500',
-      iconBg: 'bg-violet-500/10',
-      iconColor: 'text-violet-400',
     },
   ]
 
   return (
     <div className="space-y-2">
-      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+      <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-widest">
         WhatsApp — Bot João
       </p>
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {cards.map((card, i) => {
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        {cards.map((card) => {
           const Icon = card.icon
           return (
             <div
               key={card.label}
-              className={`bg-card rounded-xl border border-border border-l-4 ${card.border} shadow-card p-5 flex flex-col gap-3`}
-              style={{ animationDelay: `${i * 60}ms` }}
+              className="bg-card rounded-xl border border-border shadow-card p-5 flex flex-col gap-4"
             >
               <div className="flex items-center justify-between">
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                  {card.label}
-                </p>
-                <div className={`w-8 h-8 rounded-lg ${card.iconBg} flex items-center justify-center`}>
-                  <Icon className={`w-4 h-4 ${card.iconColor}`} />
+                <p className="text-xs font-medium text-muted-foreground">{card.label}</p>
+                <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center">
+                  <Icon className="w-3.5 h-3.5 text-primary" />
                 </div>
               </div>
               <div>

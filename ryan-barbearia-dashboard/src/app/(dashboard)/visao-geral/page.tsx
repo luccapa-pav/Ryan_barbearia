@@ -39,11 +39,7 @@ function getPeriodRange(params: SearchParams): { from: string; to: string; label
     const sunday = new Date(monday)
     sunday.setDate(monday.getDate() + 6)
     sunday.setHours(23, 59, 59, 999)
-    return {
-      from: monday.toISOString(),
-      to: sunday.toISOString(),
-      label: 'Esta semana',
-    }
+    return { from: monday.toISOString(), to: sunday.toISOString(), label: 'Esta semana' }
   }
 
   if (periodo === 'mes') {
@@ -56,7 +52,6 @@ function getPeriodRange(params: SearchParams): { from: string; to: string; label
     }
   }
 
-  // Default: hoje
   const start = new Date(now)
   start.setHours(0, 0, 0, 0)
   const end = new Date(now)
@@ -78,37 +73,37 @@ export default async function VisaoGeralPage({
   const periodo = searchParams.periodo ?? 'hoje'
   const isHoje = periodo === 'hoje' && !searchParams.de
 
-  // Agendamentos manuais (criados pelo dashboard)
-  const { data: agendData } = await supabase
-    .from('agendamentos')
-    .select('*, clientes (id, nome, telefone), servicos (id, nome, duracao_minutos, preco)')
-    .gte('data_hora', from)
-    .lte('data_hora', to)
-    .neq('status', 'cancelado')
-    .order('data_hora', { ascending: true })
+  // Queries em paralelo
+  const [agendResult, leadsResult] = await Promise.all([
+    supabase
+      .from('agendamentos')
+      .select('*, clientes (id, nome, telefone), servicos (id, nome, duracao_minutos, preco)')
+      .gte('data_hora', from)
+      .lte('data_hora', to)
+      .neq('status', 'cancelado')
+      .order('data_hora', { ascending: true }),
+    supabase
+      .from('ryan_gomes_barbearia')
+      .select('status, timestamp_ultima_msg, servicos')
+      .gte('timestamp_ultima_msg', from)
+      .lte('timestamp_ultima_msg', to),
+  ])
 
-  const agendamentos = (agendData ?? []) as AgendamentoComRelacoes[]
+  const agendamentos = (agendResult.data ?? []) as AgendamentoComRelacoes[]
+  const leads        = leadsResult.data ?? []
+
   const receita    = agendamentos.reduce((s, a) => s + (a.servicos?.preco ?? 0), 0)
   const concluidos = agendamentos.filter(a => a.status === 'concluido').length
+  const hojeStr    = format(new Date(), 'yyyy-MM-dd')
 
-  // Leads do CRM WhatsApp (tabela real do n8n)
-  const { data: leadsData } = await supabase
-    .from('ryan_gomes_barbearia')
-    .select('status, timestamp_ultima_msg, servicos')
-    .gte('timestamp_ultima_msg', from)
-    .lte('timestamp_ultima_msg', to)
-
-  const leads = leadsData ?? []
-
-  const hojeStr = format(new Date(), 'yyyy-MM-dd')
   const labelCapitalizado = label.charAt(0).toUpperCase() + label.slice(1)
 
   return (
-    <div className="space-y-6">
-      {/* Page header */}
-      <div className="flex items-start justify-between gap-4 flex-wrap">
+    <div className="space-y-8">
+      {/* Header */}
+      <div className="flex items-center justify-between gap-4 flex-wrap">
         <div>
-          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1">
+          <p className="text-xs font-medium text-muted-foreground uppercase tracking-widest mb-1">
             {labelCapitalizado}
           </p>
           <h2 className="text-2xl font-display font-bold text-foreground">Visão Geral</h2>
@@ -118,20 +113,16 @@ export default async function VisaoGeralPage({
         </Suspense>
       </div>
 
-      {/* Métricas de agendamentos (dashboard manual) */}
       <MetricasAgendamentos
         total={agendamentos.length}
         receita={receita}
         concluidos={concluidos}
       />
 
-      {/* Métricas WhatsApp (CRM do bot João) */}
       <MetricasWhatsapp leads={leads} />
 
-      {/* Funil de conversas + top serviços */}
       <GraficoStatus leads={leads} />
 
-      {/* Timeline realtime — só no período "Hoje" */}
       {isHoje && (
         <TimelineHoje
           agendamentosIniciais={agendamentos}
