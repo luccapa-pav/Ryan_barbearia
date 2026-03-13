@@ -153,7 +153,7 @@ export function AgendamentoSheet({ open, onClose, agendamento, servicos }: Agend
     <>
       {/* Overlay */}
       <div
-        className="fixed inset-0 bg-black/30 backdrop-blur-sm z-40"
+        className="fixed inset-0 bg-black/20 z-40"
         onClick={onClose}
       />
 

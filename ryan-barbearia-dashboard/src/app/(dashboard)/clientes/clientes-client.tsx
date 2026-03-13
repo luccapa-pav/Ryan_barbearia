@@ -435,7 +435,7 @@ function NovoClienteModal({ onClose }: { onClose: () => void }) {
 
   return (
     <>
-      <div className="fixed inset-0 bg-black/30 backdrop-blur-sm z-40" onClick={onClose} />
+      <div className="fixed inset-0 bg-black/20 z-40" onClick={onClose} />
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
         <div
           className="pointer-events-auto w-full max-w-sm bg-card rounded-2xl border border-border shadow-2xl flex flex-col animate-fade-up"
