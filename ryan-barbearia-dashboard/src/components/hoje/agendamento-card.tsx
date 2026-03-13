@@ -1,4 +1,3 @@
-import { Clock, User, Scissors } from 'lucide-react'
 import { formatarHora, formatarMoeda, STATUS_LABELS, STATUS_COLORS, cn } from '@/lib/utils'
 import type { AgendamentoComRelacoes } from '@/lib/supabase/types'
 
@@ -6,11 +5,17 @@ interface AgendamentoCardProps {
   agendamento: AgendamentoComRelacoes
 }
 
+const FLASH_STATUS = new Set(['confirmado', 'concluido'])
+
 export function AgendamentoCard({ agendamento }: AgendamentoCardProps) {
   const hora = formatarHora(agendamento.data_hora)
+  const hasFlash = FLASH_STATUS.has(agendamento.status)
 
   return (
-    <div className="flex items-center gap-4 px-5 py-4 hover:bg-muted/40 transition-colors group">
+    <div className={cn(
+      'flex items-center gap-4 px-5 py-4 hover:bg-muted/40 transition-colors group relative overflow-hidden',
+      hasFlash && 'animate-status-flash'
+    )}>
       {/* Hora */}
       <div className="w-16 shrink-0 text-center">
         <p className="text-base font-display font-bold text-primary leading-none">{hora}</p>

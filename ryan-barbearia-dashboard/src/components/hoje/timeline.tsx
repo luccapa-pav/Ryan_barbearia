@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { toast } from 'sonner'
 import { createClient } from '@/lib/supabase/client'
 import { AgendamentoCard } from './agendamento-card'
 import { CalendarOff } from 'lucide-react'
@@ -31,7 +32,13 @@ export function TimelineHoje({ agendamentosIniciais, hojeStr }: TimelineHojeProp
           .lt('data_hora', `${amanha.toISOString().split('T')[0]}T00:00:00`)
           .not('status', 'eq', 'cancelado')
           .order('data_hora', { ascending: true })
-        if (data) setAgendamentos(data as AgendamentoComRelacoes[])
+        if (data) {
+          setAgendamentos(data as AgendamentoComRelacoes[])
+          toast.success('Novo agendamento!', {
+            description: 'A agenda foi atualizada.',
+            duration: 4000,
+          })
+        }
       })
       .subscribe()
     return () => { supabase.removeChannel(channel) }

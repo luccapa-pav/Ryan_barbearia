@@ -6,6 +6,7 @@ import { FiltroPeriodo } from '@/components/visao-geral/filtro-periodo'
 import { MetricasAgendamentos } from '@/components/visao-geral/metricas-agendamentos'
 import { MetricasWhatsapp } from '@/components/visao-geral/metricas-whatsapp'
 import { GraficoStatus } from '@/components/visao-geral/grafico-pico'
+import { UltimaAtualizacao } from '@/components/visao-geral/ultima-atualizacao'
 import { TimelineHoje } from '@/components/hoje/timeline'
 import type { AgendamentoComRelacoes } from '@/lib/supabase/types'
 
@@ -122,6 +123,8 @@ export default async function VisaoGeralPage({
       <MetricasWhatsapp leads={leads} />
 
       <GraficoStatus leads={leads} />
+
+      <UltimaAtualizacao />
 
       {isHoje && (
         <TimelineHoje
