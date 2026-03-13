@@ -6,8 +6,9 @@ import { Toaster } from 'sonner'
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
 
 export const metadata: Metadata = {
-  title: 'Ryan Barbearia',
-  description: 'Dashboard de gerenciamento — Ryan Barbearia',
+  title: 'Ryan Gomes | Barbearia',
+  description: 'Dashboard de gerenciamento — Ryan Gomes Barbearia',
+  icons: { icon: '/icon.svg' },
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

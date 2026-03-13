@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
+  <!-- Fundo arredondado laranja -->
+  <rect width="32" height="32" rx="8" fill="#E8701A"/>
+  <!-- Tesoura branca — baseada no ícone Scissors do Lucide -->
+  <g stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Lâmina superior -->
+    <circle cx="9" cy="8" r="2.5"/>
+    <line x1="11" y1="9.5" x2="22" y2="19"/>
+    <!-- Lâmina inferior -->
+    <circle cx="9" cy="24" r="2.5"/>
+    <line x1="11" y1="22.5" x2="22" y2="13"/>
+    <!-- Parafuso / cruzamento -->
+    <line x1="14.5" y1="14.5" x2="17.5" y2="17.5"/>
+  </g>
+</svg>
