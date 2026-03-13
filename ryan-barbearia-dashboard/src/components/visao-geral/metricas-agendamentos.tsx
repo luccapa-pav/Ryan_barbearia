@@ -56,7 +56,7 @@ export function MetricasAgendamentos({ total, receita, concluidos }: MetricasAge
           return (
             <div
               key={card.label}
-              className="group relative bg-card rounded-xl border border-border hover:border-primary/40 shadow-card hover:shadow-elevated transition-all duration-200 ease-out hover:scale-[1.04] hover:-translate-y-1 p-5 flex flex-col items-center text-center gap-4 overflow-hidden cursor-default"
+              className="group relative bg-card rounded-xl border-2 border-zinc-900 dark:border-zinc-700 hover:border-primary shadow-[0_4px_14px_rgba(0,0,0,0.18)] hover:shadow-elevated transition-all duration-200 ease-out hover:scale-[1.04] hover:-translate-y-1 p-5 flex flex-col items-center text-center gap-4 overflow-hidden cursor-default"
             >
               {/* Top glow line on hover */}
               <div className="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-transparent via-primary to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
@@ -77,7 +77,7 @@ export function MetricasAgendamentos({ total, receita, concluidos }: MetricasAge
               </div>
 
               <div className="flex flex-col items-center gap-0.5">
-                <p className="text-4xl font-gotham font-black text-foreground tabular-nums leading-none tracking-tight">
+                <p className="text-3xl font-gotham font-black text-foreground tabular-nums leading-none tracking-tight">
                   {card.value}
                 </p>
                 <p className="text-xs text-muted-foreground mt-1">{card.sub}</p>
