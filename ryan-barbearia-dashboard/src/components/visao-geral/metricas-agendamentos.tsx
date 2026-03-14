@@ -23,7 +23,7 @@ export function MetricasAgendamentos({ total, receita, concluidos }: MetricasAge
 
   const cards = [
     { label: 'Agendamentos',   value: total.toString(),                                 sub: 'no período',                                 icon: CalendarCheck, primary: true,  href: '/agendamentos' },
-    { label: 'Receita Prevista', value: formatarMoeda(receita),                         sub: 'em serviços',                                icon: DollarSign,    primary: false, href: '/agendamentos' },
+    { label: 'Receita Prevista', value: formatarMoeda(receita),                         sub: 'em serviços',                                icon: DollarSign,    primary: false, href: null },
     { label: 'Concluídos',     value: concluidos.toString(),                            sub: `de ${total} agendamento${total !== 1 ? 's' : ''}`, icon: CheckCircle, primary: false, href: '/agendamentos' },
     { label: 'Aproveitamento', value: aproveitamento !== null ? `${aproveitamento}%` : '—', sub: 'taxa de conclusão',                      icon: TrendingUp,    primary: false, href: null },
   ]
