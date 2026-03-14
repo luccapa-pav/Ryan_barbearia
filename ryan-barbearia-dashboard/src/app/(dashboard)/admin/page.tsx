@@ -151,7 +151,7 @@ export default async function AdminPage() {
 
         {ativos.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-8 rounded-xl border border-dashed border-border/60 text-center gap-2">
-            <Users className="h-8 w-8 text-muted-foreground/30" />
+            <UserCheck className="h-8 w-8 text-muted-foreground/30" />
             <p className="text-sm text-muted-foreground">Nenhum usuário ativo</p>
           </div>
         ) : (
