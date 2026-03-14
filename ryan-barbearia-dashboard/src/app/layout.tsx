@@ -1,9 +1,19 @@
 import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
+import { Rethink_Sans, Jost } from 'next/font/google'
 import './globals.css'
 import { Toaster } from 'sonner'
 
-const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
+const rethinkSans = Rethink_Sans({
+  subsets: ['latin'],
+  variable: '--font-rethink',
+  weight: ['400', '500', '600', '700', '800'],
+})
+
+const jost = Jost({
+  subsets: ['latin'],
+  variable: '--font-jost',
+  weight: ['300', '400', '500', '600', '700', '800', '900'],
+})
 
 export const metadata: Metadata = {
   title: 'Ryan Gomes | Barbearia',
@@ -22,7 +32,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           }}
         />
       </head>
-      <body className={`${inter.variable} font-sans antialiased`}>
+      <body className={`${rethinkSans.variable} ${jost.variable} font-sans antialiased`}>
         {children}
         <Toaster
           theme="system"

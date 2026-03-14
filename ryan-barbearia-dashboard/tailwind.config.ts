@@ -52,8 +52,8 @@ const config: Config = {
         sm: 'calc(var(--radius) - 4px)',
       },
       fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
-        display: ['Space Grotesk', 'system-ui', 'sans-serif'],
+        sans: ['var(--font-jost)', 'system-ui', 'sans-serif'],
+        display: ['var(--font-rethink)', 'system-ui', 'sans-serif'],
       },
       boxShadow: {
         elevated: '0 4px 24px -4px rgba(0,0,0,0.10)',
