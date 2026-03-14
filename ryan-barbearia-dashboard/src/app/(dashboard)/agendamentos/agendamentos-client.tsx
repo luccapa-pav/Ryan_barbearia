@@ -136,9 +136,6 @@ export function AgendamentosPageClient({ agendamentos, servicos, autoOpenSheet =
     router.refresh()
   }
 
-  // Chave que muda com os filtros → dispara animate-fade-up na tabela
-  const tableKey = `${filterStatuses.join(',')}-${filterData}-${page}`
-
   return (
     <div className="space-y-6 animate-fade-up">
 
@@ -267,9 +264,8 @@ export function AgendamentosPageClient({ agendamentos, servicos, autoOpenSheet =
         </p>
       )}
 
-      {/* Tabela com re-animação ao trocar filtro */}
+      {/* Tabela */}
       <AgendamentosTable
-        key={tableKey}
         agendamentos={paginated}
         hasFilters={activeFiltersCount > 0}
         page={page}

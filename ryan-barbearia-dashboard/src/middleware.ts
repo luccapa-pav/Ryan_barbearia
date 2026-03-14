@@ -54,6 +54,11 @@ export async function middleware(request: NextRequest) {
     } else if (perfil.role !== 'admin' && pathname.startsWith('/admin')) {
       return NextResponse.redirect(new URL('/visao-geral', request.url))
     }
+
+    // Passa dados do perfil para o layout via headers — evita queries duplicadas
+    supabaseResponse.headers.set('x-user-id', user.id)
+    supabaseResponse.headers.set('x-user-role', perfil?.role ?? '')
+    supabaseResponse.headers.set('x-user-status', perfil?.status ?? '')
   }
 
   return supabaseResponse

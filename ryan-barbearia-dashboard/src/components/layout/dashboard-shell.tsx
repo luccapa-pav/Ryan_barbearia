@@ -6,6 +6,7 @@ import { CalendarCheck, CalendarDays, Users, Calendar, Settings, LogOut, ShieldC
 import { cn } from '@/lib/utils'
 import { ThemeToggle } from './theme-toggle'
 import { KeyboardShortcuts } from './keyboard-shortcuts'
+import { PageTransition } from './page-transition'
 import { logout } from '@/actions/auth'
 
 const BASE_TABS = [
@@ -114,10 +115,10 @@ export function DashboardShell({ children, isAdmin = false, pendentesCount = 0 }
             })}
           </nav>
 
-          {/* Page content */}
-          <div key={pathname} className="animate-fade-up">
+          {/* Page content — anima em cada troca de rota sem remontar */}
+          <PageTransition>
             {children}
-          </div>
+          </PageTransition>
         </div>
       </main>
     </div>
