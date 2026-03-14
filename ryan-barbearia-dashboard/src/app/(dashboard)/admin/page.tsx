@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { aprovarUsuario, recusarUsuario } from '@/actions/auth'
-import { ShieldCheck, UserCheck, UserX, Clock } from 'lucide-react'
+import { ShieldCheck, UserCheck, UserX, Clock, Users } from 'lucide-react'
 
 type Perfil = {
   id: string
@@ -19,15 +19,52 @@ function formatDate(iso: string) {
   })
 }
 
-function UserRow({ perfil, actions }: { perfil: Perfil; actions?: React.ReactNode }) {
+function getInitials(nome: string) {
+  return nome.split(' ').slice(0, 2).map(n => n[0]).join('').toUpperCase()
+}
+
+function Avatar({ nome, color }: { nome: string; color: string }) {
   return (
-    <div className="flex items-center justify-between gap-4 py-3 px-4 rounded-lg bg-muted/40 border border-border/50">
-      <div className="min-w-0">
-        <p className="font-medium text-foreground text-sm truncate">{perfil.nome}</p>
-        <p className="text-xs text-muted-foreground truncate">{perfil.email}</p>
-        <p className="text-[10px] text-muted-foreground/60 mt-0.5">{formatDate(perfil.criado_em)}</p>
+    <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-bold text-white ${color}`}>
+      {getInitials(nome)}
+    </div>
+  )
+}
+
+function StatusBadge({ role }: { role: string }) {
+  if (role !== 'admin') return null
+  return (
+    <span className="px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-600 text-[10px] font-bold uppercase tracking-wide border border-amber-500/20">
+      Admin
+    </span>
+  )
+}
+
+function UserCard({
+  perfil,
+  avatarColor,
+  actions,
+}: {
+  perfil: Perfil
+  avatarColor: string
+  actions?: React.ReactNode
+}) {
+  return (
+    <div className="flex items-center gap-4 p-4 rounded-xl bg-card border border-border/60 shadow-sm hover:border-border transition-colors">
+      <Avatar nome={perfil.nome} color={avatarColor} />
+      <div className="min-w-0 flex-1">
+        <div className="flex items-center gap-2 flex-wrap">
+          <p className="font-semibold text-foreground text-sm">{perfil.nome}</p>
+          <StatusBadge role={perfil.role} />
+        </div>
+        <p className="text-xs text-muted-foreground truncate mt-0.5">{perfil.email}</p>
+        <p className="text-[10px] text-muted-foreground/50 mt-1">
+          Desde {formatDate(perfil.criado_em)}
+        </p>
       </div>
-      {actions && <div className="flex items-center gap-2 shrink-0">{actions}</div>}
+      {actions && (
+        <div className="flex items-center gap-2 shrink-0">{actions}</div>
+      )}
     </div>
   )
 }
@@ -39,60 +76,89 @@ export default async function AdminPage() {
     .select('*')
     .order('criado_em', { ascending: false })
 
-  const pendentes = (perfis ?? []).filter((p: Perfil) => p.status === 'pendente')
-  const ativos    = (perfis ?? []).filter((p: Perfil) => p.status === 'ativo')
-  const recusados = (perfis ?? []).filter((p: Perfil) => p.status === 'recusado')
+  const todos     = perfis ?? []
+  const pendentes = todos.filter((p: Perfil) => p.status === 'pendente')
+  const ativos    = todos.filter((p: Perfil) => p.status === 'ativo')
+  const recusados = todos.filter((p: Perfil) => p.status === 'recusado')
+
+  const stats = [
+    { label: 'Total', value: todos.length, icon: Users, color: 'text-muted-foreground', bg: 'bg-muted/60' },
+    { label: 'Pendentes', value: pendentes.length, icon: Clock, color: 'text-amber-600', bg: 'bg-amber-500/10' },
+    { label: 'Ativos', value: ativos.length, icon: UserCheck, color: 'text-green-600', bg: 'bg-green-500/10' },
+    { label: 'Recusados', value: recusados.length, icon: UserX, color: 'text-red-500', bg: 'bg-red-500/10' },
+  ]
 
   return (
-    <div className="space-y-6 max-w-2xl mx-auto">
+    <div className="space-y-6 max-w-3xl mx-auto">
+
+      {/* Header */}
       <div className="flex items-center gap-3">
-        <ShieldCheck className="h-6 w-6 text-amber-500" />
-        <div>
-          <h1 className="text-xl font-bold text-foreground">Painel de Aprovações</h1>
-          <p className="text-sm text-muted-foreground">Gerencie o acesso dos usuários ao sistema</p>
+        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-500/10 border border-amber-500/20">
+          <ShieldCheck className="h-5 w-5 text-amber-500" />
         </div>
+        <div>
+          <h1 className="text-lg font-bold text-foreground">Painel de Aprovações</h1>
+          <p className="text-xs text-muted-foreground">Gerencie o acesso dos usuários ao sistema</p>
+        </div>
+      </div>
+
+      {/* Stats */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        {stats.map(({ label, value, icon: Icon, color, bg }) => (
+          <div key={label} className="rounded-xl border border-border/60 bg-card p-4 flex items-center gap-3 shadow-sm">
+            <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${bg}`}>
+              <Icon className={`h-4 w-4 ${color}`} />
+            </div>
+            <div>
+              <p className={`text-2xl font-bold leading-none ${color}`}>{value}</p>
+              <p className="text-[11px] text-muted-foreground mt-1">{label}</p>
+            </div>
+          </div>
+        ))}
       </div>
 
       {/* Pendentes */}
       <section className="space-y-3">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 px-1">
           <Clock className="h-4 w-4 text-amber-500" />
-          <h2 className="font-semibold text-foreground text-sm">
-            Pendentes
-            {pendentes.length > 0 && (
-              <span className="ml-2 px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-600 text-xs font-bold">
-                {pendentes.length}
-              </span>
-            )}
-          </h2>
+          <h2 className="font-semibold text-foreground text-sm">Aguardando aprovação</h2>
+          {pendentes.length > 0 && (
+            <span className="px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-600 text-xs font-bold border border-amber-500/20">
+              {pendentes.length}
+            </span>
+          )}
         </div>
 
         {pendentes.length === 0 ? (
-          <p className="text-sm text-muted-foreground py-3 px-4">Nenhum cadastro pendente.</p>
+          <div className="flex flex-col items-center justify-center py-8 rounded-xl border border-dashed border-border/60 text-center gap-2">
+            <Clock className="h-8 w-8 text-muted-foreground/30" />
+            <p className="text-sm text-muted-foreground">Nenhum cadastro pendente</p>
+          </div>
         ) : (
           <div className="space-y-2">
             {pendentes.map((p: Perfil) => (
-              <UserRow
+              <UserCard
                 key={p.id}
                 perfil={p}
+                avatarColor="bg-amber-500"
                 actions={
                   <>
                     <form action={aprovarUsuario.bind(null, p.user_id)}>
                       <button
                         type="submit"
-                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-green-600 hover:bg-green-500 text-white text-xs font-semibold transition-colors"
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-green-600 hover:bg-green-500 active:scale-95 text-white text-xs font-semibold transition-all duration-150"
                       >
                         <UserCheck className="h-3.5 w-3.5" />
-                        Aprovar
+                        <span className="hidden sm:inline">Aprovar</span>
                       </button>
                     </form>
                     <form action={recusarUsuario.bind(null, p.user_id)}>
                       <button
                         type="submit"
-                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-red-600 hover:bg-red-500 text-white text-xs font-semibold transition-colors"
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-card hover:bg-red-500/10 active:scale-95 border border-border hover:border-red-500/30 text-muted-foreground hover:text-red-500 text-xs font-semibold transition-all duration-150"
                       >
                         <UserX className="h-3.5 w-3.5" />
-                        Recusar
+                        <span className="hidden sm:inline">Recusar</span>
                       </button>
                     </form>
                   </>
@@ -105,22 +171,27 @@ export default async function AdminPage() {
 
       {/* Ativos */}
       <section className="space-y-3">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 px-1">
           <UserCheck className="h-4 w-4 text-green-500" />
-          <h2 className="font-semibold text-foreground text-sm">
-            Ativos
-            <span className="ml-2 px-2 py-0.5 rounded-full bg-green-500/15 text-green-600 text-xs font-bold">
-              {ativos.length}
-            </span>
-          </h2>
+          <h2 className="font-semibold text-foreground text-sm">Usuários ativos</h2>
+          <span className="px-2 py-0.5 rounded-full bg-green-500/10 text-green-600 text-xs font-bold border border-green-500/20">
+            {ativos.length}
+          </span>
         </div>
 
         {ativos.length === 0 ? (
-          <p className="text-sm text-muted-foreground py-3 px-4">Nenhum usuário ativo.</p>
+          <div className="flex flex-col items-center justify-center py-8 rounded-xl border border-dashed border-border/60 text-center gap-2">
+            <Users className="h-8 w-8 text-muted-foreground/30" />
+            <p className="text-sm text-muted-foreground">Nenhum usuário ativo</p>
+          </div>
         ) : (
           <div className="space-y-2">
             {ativos.map((p: Perfil) => (
-              <UserRow key={p.id} perfil={p} />
+              <UserCard
+                key={p.id}
+                perfil={p}
+                avatarColor={p.role === 'admin' ? 'bg-amber-500' : 'bg-primary'}
+              />
             ))}
           </div>
         )}
@@ -129,28 +200,27 @@ export default async function AdminPage() {
       {/* Recusados */}
       {recusados.length > 0 && (
         <section className="space-y-3">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 px-1">
             <UserX className="h-4 w-4 text-red-500" />
-            <h2 className="font-semibold text-foreground text-sm">
-              Recusados
-              <span className="ml-2 px-2 py-0.5 rounded-full bg-red-500/15 text-red-600 text-xs font-bold">
-                {recusados.length}
-              </span>
-            </h2>
+            <h2 className="font-semibold text-foreground text-sm">Recusados</h2>
+            <span className="px-2 py-0.5 rounded-full bg-red-500/10 text-red-500 text-xs font-bold border border-red-500/20">
+              {recusados.length}
+            </span>
           </div>
           <div className="space-y-2">
             {recusados.map((p: Perfil) => (
-              <UserRow
+              <UserCard
                 key={p.id}
                 perfil={p}
+                avatarColor="bg-muted-foreground/40"
                 actions={
                   <form action={aprovarUsuario.bind(null, p.user_id)}>
                     <button
                       type="submit"
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-green-600 hover:bg-green-500 text-white text-xs font-semibold transition-colors"
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-card hover:bg-green-500/10 active:scale-95 border border-border hover:border-green-500/30 text-muted-foreground hover:text-green-600 text-xs font-semibold transition-all duration-150"
                     >
                       <UserCheck className="h-3.5 w-3.5" />
-                      Reativar
+                      <span className="hidden sm:inline">Reativar</span>
                     </button>
                   </form>
                 }
