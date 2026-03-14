@@ -25,13 +25,35 @@ export async function middleware(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser()
 
-  const isLoginPage    = request.nextUrl.pathname.startsWith('/login')
-  const isWebhookRoute = request.nextUrl.pathname.startsWith('/api/webhooks')
+  const { pathname } = request.nextUrl
 
-  if (!user && !isLoginPage && !isWebhookRoute) {
+  const isPublicAuthRoute = ['/login', '/cadastro', '/aguardando', '/recusado'].some(p => pathname.startsWith(p))
+  const isWebhookRoute    = pathname.startsWith('/api/webhooks')
+
+  if (!user && !isPublicAuthRoute && !isWebhookRoute) {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
     return NextResponse.redirect(url)
+  }
+
+  if (user && !isPublicAuthRoute && !isWebhookRoute) {
+    const { data: perfil } = await supabase
+      .from('perfis')
+      .select('status, role')
+      .eq('user_id', user.id)
+      .single()
+
+    if (!perfil || perfil.status === 'pendente') {
+      if (!pathname.startsWith('/aguardando')) {
+        return NextResponse.redirect(new URL('/aguardando', request.url))
+      }
+    } else if (perfil.status === 'recusado') {
+      if (!pathname.startsWith('/recusado')) {
+        return NextResponse.redirect(new URL('/recusado', request.url))
+      }
+    } else if (perfil.role !== 'admin' && pathname.startsWith('/admin')) {
+      return NextResponse.redirect(new URL('/visao-geral', request.url))
+    }
   }
 
   return supabaseResponse

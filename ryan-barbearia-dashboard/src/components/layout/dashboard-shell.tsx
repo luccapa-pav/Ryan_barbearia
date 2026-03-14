@@ -1,13 +1,14 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname, useRouter } from 'next/navigation'
-import { CalendarCheck, CalendarDays, Users, Calendar, Settings, LogOut } from 'lucide-react'
+import { usePathname } from 'next/navigation'
+import { CalendarCheck, CalendarDays, Users, Calendar, Settings, LogOut, ShieldCheck } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { ThemeToggle } from './theme-toggle'
 import { KeyboardShortcuts } from './keyboard-shortcuts'
+import { logout } from '@/actions/auth'
 
-const TABS = [
+const BASE_TABS = [
   { href: '/visao-geral',   label: 'Visão Geral',   icon: CalendarCheck },
   { href: '/calendario',    label: 'Calendário',    icon: Calendar },
   { href: '/agendamentos',  label: 'Agendamentos',  icon: CalendarDays },
@@ -15,9 +16,17 @@ const TABS = [
   { href: '/configuracoes', label: 'Configurações', icon: Settings },
 ]
 
-export function DashboardShell({ children }: { children: React.ReactNode }) {
+const ADMIN_TAB = { href: '/admin', label: 'Admin', icon: ShieldCheck }
+
+interface DashboardShellProps {
+  children: React.ReactNode
+  isAdmin?: boolean
+}
+
+export function DashboardShell({ children, isAdmin = false }: DashboardShellProps) {
   const pathname = usePathname()
-  const router = useRouter()
+
+  const TABS = isAdmin ? [...BASE_TABS, ADMIN_TAB] : BASE_TABS
 
   const today = new Date().toLocaleDateString('pt-BR', {
     weekday: 'short', day: '2-digit', month: 'short',
@@ -52,13 +61,15 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
           <div className="flex items-center gap-1">
             <ThemeToggle />
             <div className="w-px h-4 bg-border mx-1.5" />
-            <button
-              onClick={() => router.push('/login')}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-muted-foreground hover:text-foreground hover:bg-muted transition-all duration-200 active:scale-95 hover:scale-105"
-            >
-              <LogOut className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Sair</span>
-            </button>
+            <form action={logout}>
+              <button
+                type="submit"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-muted-foreground hover:text-foreground hover:bg-muted transition-all duration-200 active:scale-95 hover:scale-105"
+              >
+                <LogOut className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">Sair</span>
+              </button>
+            </form>
           </div>
         </div>
       </header>
