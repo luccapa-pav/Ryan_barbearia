@@ -17,7 +17,7 @@ type Periodo = 'hoje' | 'semana' | 'mes'
 
 interface VisaoGeralClientProps {
   todosAgendamentos: AgendamentoComRelacoes[]
-  todosLeads: { status: string | null; timestamp_ultima_msg: string | null; servicos: string | null }[]
+  todosLeads: { status: string | null; timestamp_ultima_msg: string | null; servicos: string | null; inicio_fora_horario_comercial: string | null }[]
   hojeStr: string
 }
 

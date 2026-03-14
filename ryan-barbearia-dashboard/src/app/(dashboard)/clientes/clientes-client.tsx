@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useMemo, useEffect } from 'react'
-import { Search, Users, UserPlus, CalendarCheck, Phone, X, Clock, CheckCircle, CalendarDays, Plus, DollarSign } from 'lucide-react'
+import { Search, Users, UserPlus, CalendarCheck, Phone, X, Clock, CheckCircle, CalendarDays, Plus, DollarSign, Scissors, MessageCircle } from 'lucide-react'
 import { format, isThisMonth } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { toast } from 'sonner'
@@ -9,9 +9,18 @@ import { formatarMoeda, formatarTelefone, STATUS_COLORS, STATUS_LABELS, cn } fro
 import { criarCliente } from '@/actions/clientes'
 import type { Cliente, AgendamentoComRelacoes } from '@/lib/supabase/types'
 
+interface CrmData {
+  whatsapp: string | null
+  quantidade_cortes: string | null
+  gasto_total: string | null
+  servico_habitual: string | null
+  resumo_perfil_cliente: string | null
+}
+
 interface ClientesPageClientProps {
   clientes: Cliente[]
   agendamentos: AgendamentoComRelacoes[]
+  crmData: CrmData[]
 }
 
 // Cores de avatar derivadas do nome
@@ -31,10 +40,24 @@ function avatarColor(nome: string) {
   return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length]
 }
 
-export function ClientesPageClient({ clientes, agendamentos }: ClientesPageClientProps) {
+// Normaliza telefone extraindo últimos 11 dígitos (lida com DDI 55)
+function normalizePhone(phone: string): string {
+  return phone.replace(/\D/g, '').slice(-11)
+}
+
+export function ClientesPageClient({ clientes, agendamentos, crmData }: ClientesPageClientProps) {
   const [search, setSearch]               = useState('')
   const [selected, setSelected]           = useState<Cliente | null>(null)
   const [novoOpen, setNovoOpen]           = useState(false)
+
+  // Lookup CRM por telefone normalizado
+  const crmMap = useMemo(() => {
+    const map = new Map<string, CrmData>()
+    for (const row of crmData) {
+      if (row.whatsapp) map.set(normalizePhone(row.whatsapp), row)
+    }
+    return map
+  }, [crmData])
 
   // Stats por cliente — computado uma vez
   const statsMap = useMemo(() => {
@@ -253,6 +276,7 @@ export function ClientesPageClient({ clientes, agendamentos }: ClientesPageClien
             <ClienteDetalhe
               cliente={selected}
               stats={statsMap[selected.id] ?? { total: 0, concluidos: 0, totalGasto: 0, ultimaVisita: null, servicos: [] }}
+              crm={crmMap.get(normalizePhone(selected.telefone)) ?? null}
               onClose={() => setSelected(null)}
             />
           </div>
@@ -273,10 +297,11 @@ interface ClienteDetalheProps {
     ultimaVisita: string | null
     servicos: AgendamentoComRelacoes[]
   }
+  crm: CrmData | null
   onClose: () => void
 }
 
-function ClienteDetalhe({ cliente, stats, onClose }: ClienteDetalheProps) {
+function ClienteDetalhe({ cliente, stats, crm, onClose }: ClienteDetalheProps) {
   const color = avatarColor(cliente.nome)
 
   return (
@@ -386,6 +411,44 @@ function ClienteDetalhe({ cliente, stats, onClose }: ClienteDetalheProps) {
             Observações
           </p>
           <p className="text-sm text-foreground/80 leading-relaxed">{cliente.observacoes}</p>
+        </div>
+      )}
+
+      {/* Dados WhatsApp CRM */}
+      {crm && (crm.quantidade_cortes || crm.gasto_total || crm.servico_habitual || crm.resumo_perfil_cliente) && (
+        <div className="px-5 py-4 border-t border-border">
+          <p className="text-[10px] font-extrabold text-muted-foreground uppercase tracking-widest font-gotham mb-3 flex items-center gap-1.5">
+            <MessageCircle className="w-3 h-3 text-primary" />
+            WhatsApp CRM
+          </p>
+          <div className="grid grid-cols-3 gap-2 mb-3">
+            {crm.quantidade_cortes && (
+              <div className="bg-muted/40 rounded-xl p-3 text-center">
+                <Scissors className="w-4 h-4 mx-auto mb-1 text-primary" />
+                <p className="text-xs font-bold text-foreground">{crm.quantidade_cortes}</p>
+                <p className="text-[10px] text-muted-foreground mt-0.5 font-gotham uppercase tracking-wide">Cortes</p>
+              </div>
+            )}
+            {crm.gasto_total && (
+              <div className="bg-muted/40 rounded-xl p-3 text-center">
+                <DollarSign className="w-4 h-4 mx-auto mb-1 text-emerald-400" />
+                <p className="text-xs font-bold text-foreground truncate">{crm.gasto_total}</p>
+                <p className="text-[10px] text-muted-foreground mt-0.5 font-gotham uppercase tracking-wide">Gasto</p>
+              </div>
+            )}
+            {crm.servico_habitual && (
+              <div className="bg-muted/40 rounded-xl p-3 text-center">
+                <CheckCircle className="w-4 h-4 mx-auto mb-1 text-blue-400" />
+                <p className="text-xs font-bold text-foreground truncate" title={crm.servico_habitual}>{crm.servico_habitual}</p>
+                <p className="text-[10px] text-muted-foreground mt-0.5 font-gotham uppercase tracking-wide">Habitual</p>
+              </div>
+            )}
+          </div>
+          {crm.resumo_perfil_cliente && (
+            <p className="text-xs text-muted-foreground italic leading-relaxed border-t border-border/40 pt-3">
+              {crm.resumo_perfil_cliente}
+            </p>
+          )}
         </div>
       )}
 

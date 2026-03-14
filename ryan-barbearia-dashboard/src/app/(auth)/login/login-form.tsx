@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
+import { registrarLogin } from '@/actions/auth'
 
 interface LoginFormProps {
   redirectTo?: string
@@ -28,6 +29,7 @@ export function LoginForm({ redirectTo }: LoginFormProps) {
         return
       }
 
+      registrarLogin(email).catch(() => {}) // fire-and-forget
       router.push(redirectTo ?? '/hoje')
       router.refresh()
     } catch {

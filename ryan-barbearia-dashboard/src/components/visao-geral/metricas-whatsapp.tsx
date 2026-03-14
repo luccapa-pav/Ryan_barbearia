@@ -1,11 +1,12 @@
 'use client'
 
-import { MessageCircle, CalendarCheck, Clock, TrendingUp } from 'lucide-react'
+import { MessageCircle, CalendarCheck, Moon, TrendingUp } from 'lucide-react'
 
 interface LeadCRM {
   status: string | null
   timestamp_ultima_msg: string | null
   servicos: string | null
+  inicio_fora_horario_comercial: string | null
 }
 
 interface MetricasWhatsappProps {
@@ -15,21 +16,21 @@ interface MetricasWhatsappProps {
 const TOOLTIPS = {
   'Conversas':         'Clientes únicos que interagiram com o bot João no período',
   'Confirmados':       'Conversas em que o bot confirmou um agendamento (status 4)',
-  'Em Andamento':      'Conversas em negociação — cliente escolhendo serviço ou horário',
+  'Fora do Horário':   'Conversas iniciadas fora do horário comercial',
   'Conversão':         'Confirmados ÷ Total de conversas × 100%',
 }
 
 export function MetricasWhatsapp({ leads }: MetricasWhatsappProps) {
-  const total       = leads.length
-  const confirmados = leads.filter(l => l.status === '4').length
-  const andamento   = leads.filter(l => l.status === '2' || l.status === '3').length
-  const taxa        = total > 0 ? Math.round((confirmados / total) * 100) : null
+  const total        = leads.length
+  const confirmados  = leads.filter(l => l.status === '4').length
+  const foraHorario  = leads.filter(l => l.inicio_fora_horario_comercial !== null).length
+  const taxa         = total > 0 ? Math.round((confirmados / total) * 100) : null
 
   const cards = [
-    { label: 'Conversas',    value: total.toString(),                       sub: 'via WhatsApp',          icon: MessageCircle, primary: true  },
-    { label: 'Confirmados',  value: confirmados.toString(),                 sub: 'agendamentos pelo bot', icon: CalendarCheck, primary: false },
-    { label: 'Em Andamento', value: andamento.toString(),                   sub: 'em negociação',         icon: Clock,         primary: false },
-    { label: 'Conversão',    value: taxa !== null ? `${taxa}%` : '—',       sub: 'conversa → agendamento',icon: TrendingUp,    primary: false },
+    { label: 'Conversas',      value: total.toString(),                 sub: 'via WhatsApp',           icon: MessageCircle, primary: true  },
+    { label: 'Confirmados',    value: confirmados.toString(),           sub: 'agendamentos pelo bot',  icon: CalendarCheck, primary: false },
+    { label: 'Fora do Horário',value: foraHorario.toString(),           sub: 'iniciadas fora do turno',icon: Moon,          primary: false },
+    { label: 'Conversão',      value: taxa !== null ? `${taxa}%` : '—', sub: 'conversa → agendamento', icon: TrendingUp,    primary: false },
   ]
 
   return (

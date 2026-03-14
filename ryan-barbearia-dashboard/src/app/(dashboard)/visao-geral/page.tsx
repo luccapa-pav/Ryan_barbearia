@@ -25,7 +25,7 @@ export default async function VisaoGeralPage() {
       .order('data_hora', { ascending: true }),
     supabase
       .from('ryan_gomes_barbearia')
-      .select('status, timestamp_ultima_msg, servicos')
+      .select('status, timestamp_ultima_msg, servicos, inicio_fora_horario_comercial')
       .gte('timestamp_ultima_msg', from.toISOString())
       .lte('timestamp_ultima_msg', to.toISOString()),
   ])
