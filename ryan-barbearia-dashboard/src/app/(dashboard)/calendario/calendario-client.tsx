@@ -11,7 +11,7 @@ import { ptBR } from 'date-fns/locale'
 import { ChevronLeft, ChevronRight, CalendarDays } from 'lucide-react'
 import { DatePickerFilter } from '@/components/agendamentos/date-picker-filter'
 import { formatarHora, STATUS_COLORS, cn } from '@/lib/utils'
-import type { AgendamentoComRelacoes } from '@/lib/supabase/types'
+import type { AgendamentoComRelacoes, HorarioTrabalho } from '@/lib/supabase/types'
 
 type CalView = 'hoje' | 'semana' | 'mes' | 'ano' | 'custom'
 
@@ -31,9 +31,10 @@ const DOW_SHORT = ['Seg','Ter','Qua','Qui','Sex','Sáb','Dom']
 
 interface CalendarioClientProps {
   agendamentos: AgendamentoComRelacoes[]
+  horarios: HorarioTrabalho[]
 }
 
-export function CalendarioClient({ agendamentos }: CalendarioClientProps) {
+export function CalendarioClient({ agendamentos, horarios }: CalendarioClientProps) {
   const [view, setView]           = useState<CalView>('semana')
   const [current, setCurrent]     = useState<Date>(new Date())
   const [customDate, setCustomDate] = useState<string>('')
@@ -157,7 +158,7 @@ export function CalendarioClient({ agendamentos }: CalendarioClientProps) {
 
       {/* Conteúdo da view */}
       {view === 'hoje' && (
-        <DayView date={current} appts={getForDate(current)} />
+        <DayView date={current} appts={getForDate(current)} horarios={horarios} />
       )}
       {view === 'semana' && (
         <WeekView current={current} byDate={byDate} onDayClick={goToDay} />
@@ -170,7 +171,7 @@ export function CalendarioClient({ agendamentos }: CalendarioClientProps) {
       )}
       {view === 'custom' && (
         customDate
-          ? <DayView date={new Date(customDate + 'T12:00:00')} appts={getForDate(new Date(customDate + 'T12:00:00'))} />
+          ? <DayView date={new Date(customDate + 'T12:00:00')} appts={getForDate(new Date(customDate + 'T12:00:00'))} horarios={horarios} />
           : (
             <div className="flex flex-col items-center justify-center py-20 text-muted-foreground gap-3">
               <CalendarDays className="w-10 h-10 opacity-30" />
@@ -184,59 +185,151 @@ export function CalendarioClient({ agendamentos }: CalendarioClientProps) {
 
 // ── DayView ──────────────────────────────────────────────────────────────────
 
-function DayView({ date, appts }: { date: Date; appts: AgendamentoComRelacoes[] }) {
-  const sorted = [...appts].sort((a, b) => a.data_hora.localeCompare(b.data_hora))
-  const isHoje = isToday(date)
+function gerarSlotsLivres(
+  date: Date,
+  appts: AgendamentoComRelacoes[],
+  horarios: HorarioTrabalho[],
+): { hora: string; livre: boolean; appt?: AgendamentoComRelacoes }[] {
+  // dia_semana: 0=dom,1=seg...6=sab (igual ao JS Date.getDay())
+  const diaSemana = date.getDay()
+  const horario = horarios.find(h => h.dia_semana === diaSemana)
+  if (!horario) return []
+
+  const [hIni, mIni] = horario.hora_inicio.split(':').map(Number)
+  const [hFim, mFim] = horario.hora_fim.split(':').map(Number)
+  const inicioMin = hIni * 60 + mIni
+  const fimMin    = hFim * 60 + mFim
+
+  // Constrói lista de intervalos ocupados (inicio, fim) em minutos desde meia-noite
+  const ocupados = appts
+    .filter(a => a.status !== 'cancelado' && a.status !== 'faltou')
+    .map(a => {
+      const d = new Date(a.data_hora)
+      const inicio = d.getHours() * 60 + d.getMinutes()
+      const dur = a.servicos?.duracao_minutos ?? 30
+      return { inicio, fim: inicio + dur, appt: a }
+    })
+
+  const slots: { hora: string; livre: boolean; appt?: AgendamentoComRelacoes }[] = []
+  for (let min = inicioMin; min < fimMin; min += 30) {
+    const h = String(Math.floor(min / 60)).padStart(2, '0')
+    const m = String(min % 60).padStart(2, '0')
+    const hora = `${h}:${m}`
+    const ocupacao = ocupados.find(o => min >= o.inicio && min < o.fim)
+    // Inclui slot apenas se for o inicio exato de um agendamento ou se for livre
+    const isInicioAppt = ocupados.find(o => min === o.inicio)
+    if (ocupacao && !isInicioAppt) continue // slot no meio de um agendamento, pula
+    slots.push({ hora, livre: !ocupacao, appt: isInicioAppt?.appt })
+  }
+  return slots
+}
+
+function DayView({ date, appts, horarios }: { date: Date; appts: AgendamentoComRelacoes[]; horarios: HorarioTrabalho[] }) {
+  const sorted  = [...appts].sort((a, b) => a.data_hora.localeCompare(b.data_hora))
+  const isHoje  = isToday(date)
+  const slots   = gerarSlotsLivres(date, appts, horarios)
+  const livres  = slots.filter(s => s.livre).length
+  const semExpediente = horarios.find(h => h.dia_semana === date.getDay()) === undefined
 
   return (
-    <div className="bg-card border border-border rounded-2xl overflow-hidden">
-      <div className={cn(
-        'px-5 py-3 border-b border-border flex items-center gap-3',
-        isHoje && 'bg-primary/5'
-      )}>
+    <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-4">
+      {/* Lista de agendamentos */}
+      <div className="bg-card border border-border rounded-2xl overflow-hidden">
         <div className={cn(
-          'flex items-center justify-center w-10 h-10 rounded-xl font-gotham font-black text-xl',
-          isHoje ? 'bg-primary text-primary-foreground' : 'bg-muted text-foreground'
+          'px-5 py-3 border-b border-border flex items-center gap-3',
+          isHoje && 'bg-primary/5'
         )}>
-          {format(date, 'd')}
+          <div className={cn(
+            'flex items-center justify-center w-10 h-10 rounded-xl font-gotham font-black text-xl',
+            isHoje ? 'bg-primary text-primary-foreground' : 'bg-muted text-foreground'
+          )}>
+            {format(date, 'd')}
+          </div>
+          <div>
+            <p className="font-gotham font-bold text-foreground capitalize">
+              {format(date, "EEEE", { locale: ptBR })}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              {sorted.length} agendamento{sorted.length !== 1 ? 's' : ''}
+            </p>
+          </div>
         </div>
-        <div>
-          <p className="font-gotham font-bold text-foreground capitalize">
-            {format(date, "EEEE", { locale: ptBR })}
-          </p>
-          <p className="text-xs text-muted-foreground">
-            {sorted.length} agendamento{sorted.length !== 1 ? 's' : ''}
-          </p>
-        </div>
+
+        {sorted.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-16 text-muted-foreground gap-2">
+            <CalendarDays className="w-8 h-8 opacity-30" />
+            <p className="text-sm">Nenhum agendamento neste dia</p>
+          </div>
+        ) : (
+          <div className="divide-y divide-border">
+            {sorted.map(a => (
+              <div key={a.id} className="px-5 py-3.5 flex items-center gap-4">
+                <span className="text-sm font-bold font-gotham text-foreground tabular-nums w-12 shrink-0">
+                  {formatarHora(a.data_hora)}
+                </span>
+                <div className={cn('w-1.5 h-1.5 rounded-full shrink-0', statusDot(a.status))} />
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold text-foreground truncate">{a.clientes?.nome}</p>
+                  <p className="text-xs text-muted-foreground truncate">{a.servicos?.nome}</p>
+                </div>
+                <span className={cn(
+                  'ml-auto shrink-0 text-[10px] font-bold font-gotham uppercase px-2 py-0.5 rounded-lg border',
+                  STATUS_COLORS[a.status]
+                )}>
+                  {a.status}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
-      {sorted.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-16 text-muted-foreground gap-2">
-          <CalendarDays className="w-8 h-8 opacity-30" />
-          <p className="text-sm">Nenhum agendamento neste dia</p>
+      {/* Painel de horários disponíveis */}
+      <div className="bg-card border border-border rounded-2xl overflow-hidden">
+        <div className="px-4 py-3 border-b border-border">
+          <p className="text-xs font-extrabold text-foreground/70 uppercase tracking-widest font-gotham">Horários</p>
+          {!semExpediente && slots.length > 0 && (
+            <p className="text-xs text-muted-foreground mt-0.5">
+              <span className="font-bold text-emerald-500">{livres}</span> livre{livres !== 1 ? 's' : ''} · {slots.length - livres} ocupado{slots.length - livres !== 1 ? 's' : ''}
+            </p>
+          )}
         </div>
-      ) : (
-        <div className="divide-y divide-border">
-          {sorted.map(a => (
-            <div key={a.id} className="px-5 py-3.5 flex items-center gap-4">
-              <span className="text-sm font-bold font-gotham text-foreground tabular-nums w-12 shrink-0">
-                {formatarHora(a.data_hora)}
-              </span>
-              <div className={cn('w-1.5 h-1.5 rounded-full shrink-0', statusDot(a.status))} />
-              <div className="min-w-0">
-                <p className="text-sm font-semibold text-foreground truncate">{a.clientes?.nome}</p>
-                <p className="text-xs text-muted-foreground truncate">{a.servicos?.nome}</p>
-              </div>
-              <span className={cn(
-                'ml-auto shrink-0 text-[10px] font-bold font-gotham uppercase px-2 py-0.5 rounded-lg border',
-                STATUS_COLORS[a.status]
+
+        {semExpediente ? (
+          <div className="flex flex-col items-center justify-center py-10 text-muted-foreground gap-2">
+            <p className="text-sm font-semibold">Sem expediente</p>
+            <p className="text-xs opacity-60">Dia de folga configurado</p>
+          </div>
+        ) : slots.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-10 text-muted-foreground gap-2">
+            <p className="text-xs">Horários não configurados</p>
+          </div>
+        ) : (
+          <div className="divide-y divide-border/50 max-h-[420px] overflow-y-auto">
+            {slots.map(slot => (
+              <div key={slot.hora} className={cn(
+                'px-4 py-2.5 flex items-center gap-3',
+                slot.livre ? 'hover:bg-emerald-50/50 dark:hover:bg-emerald-950/20' : 'opacity-70'
               )}>
-                {a.status}
-              </span>
-            </div>
-          ))}
-        </div>
-      )}
+                <span className="text-xs font-bold font-gotham tabular-nums text-foreground w-11 shrink-0">
+                  {slot.hora}
+                </span>
+                {slot.livre ? (
+                  <span className="flex items-center gap-1.5 text-xs text-emerald-600 dark:text-emerald-400 font-semibold">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+                    Disponível
+                  </span>
+                ) : (
+                  <span className="flex items-center gap-1.5 text-xs text-muted-foreground truncate">
+                    <span className={cn('w-1.5 h-1.5 rounded-full shrink-0', statusDot(slot.appt?.status ?? 'pendente'))} />
+                    <span className="truncate">{slot.appt?.clientes?.nome ?? 'Ocupado'}</span>
+                  </span>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   )
 }

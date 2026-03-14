@@ -10,11 +10,11 @@ import { PageTransition } from './page-transition'
 import { logout } from '@/actions/auth'
 
 const BASE_TABS = [
-  { href: '/visao-geral',   label: 'Visão Geral',   icon: CalendarCheck },
-  { href: '/calendario',    label: 'Calendário',    icon: Calendar },
-  { href: '/agendamentos',  label: 'Agendamentos',  icon: CalendarDays },
-  { href: '/clientes',      label: 'Clientes',      icon: Users },
-  { href: '/configuracoes', label: 'Configurações', icon: Settings },
+  { href: '/visao-geral',   label: 'Visão Geral',   shortLabel: 'Geral',  icon: CalendarCheck },
+  { href: '/calendario',    label: 'Calendário',    shortLabel: 'Cal.',   icon: Calendar },
+  { href: '/agendamentos',  label: 'Agendamentos',  shortLabel: 'Ag.',    icon: CalendarDays },
+  { href: '/clientes',      label: 'Clientes',      shortLabel: 'Cli.',   icon: Users },
+  { href: '/configuracoes', label: 'Configurações', shortLabel: 'Config', icon: Settings },
 ]
 
 interface DashboardShellProps {
@@ -31,7 +31,7 @@ export function DashboardShell({ children, isAdmin = false, pendentesCount = 0 }
   })
 
   const TABS = isAdmin
-    ? [...BASE_TABS, { href: '/admin', label: 'Admin', icon: ShieldCheck, badge: pendentesCount }]
+    ? [...BASE_TABS, { href: '/admin', label: 'Admin', shortLabel: 'Admin', icon: ShieldCheck, badge: pendentesCount }]
     : BASE_TABS
 
   return (
@@ -84,6 +84,7 @@ export function DashboardShell({ children, isAdmin = false, pendentesCount = 0 }
           <nav className="mb-5 flex justify-center gap-0.5 rounded-xl bg-muted/60 p-1 overflow-x-auto scrollbar-none border border-border/50">
             {TABS.map(({ href, label, icon: Icon, ...rest }, i) => {
               const badge = 'badge' in rest ? (rest as { badge: number }).badge : 0
+              const shortLabel = 'shortLabel' in rest ? (rest as { shortLabel: string }).shortLabel : label
               const active = pathname === href || pathname.startsWith(href + '/')
               return (
                 <Link
@@ -92,13 +93,26 @@ export function DashboardShell({ children, isAdmin = false, pendentesCount = 0 }
                   prefetch={true}
                   title={`Atalho: ${i + 1}`}
                   className={cn(
-                    'relative flex shrink-0 items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition-all duration-150 whitespace-nowrap active:scale-95 hover:scale-105',
+                    'relative flex shrink-0 items-center gap-2 rounded-lg px-3 py-2 sm:px-4 text-sm font-semibold transition-all duration-150 whitespace-nowrap active:scale-95 hover:scale-105',
                     active
                       ? 'bg-card text-foreground shadow-card border border-border/80 scale-[1.02]'
                       : 'text-muted-foreground hover:text-foreground hover:bg-card/70'
                   )}
                 >
-                  <span className="relative">
+                  {/* Mobile: ícone + label curto em coluna */}
+                  <span className="sm:hidden flex flex-col items-center gap-0.5">
+                    <span className="relative">
+                      <Icon className={cn('h-4 w-4 shrink-0 transition-colors', active ? 'text-primary' : '')} />
+                      {badge > 0 && (
+                        <span className="absolute -top-1.5 -right-1.5 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-red-500 text-[8px] font-black text-white">
+                          {badge > 9 ? '9+' : badge}
+                        </span>
+                      )}
+                    </span>
+                    <span className="text-[9px] font-bold font-gotham leading-none">{shortLabel}</span>
+                  </span>
+                  {/* Desktop: ícone + label completo em linha */}
+                  <span className="hidden sm:relative sm:flex sm:items-center">
                     <Icon className={cn('h-4 w-4 shrink-0 transition-colors', active ? 'text-primary' : '')} />
                     {badge > 0 && (
                       <span className="absolute -top-1.5 -right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[9px] font-black text-white">
@@ -107,9 +121,6 @@ export function DashboardShell({ children, isAdmin = false, pendentesCount = 0 }
                     )}
                   </span>
                   <span className="hidden sm:inline">{label}</span>
-                  {active && (
-                    <span className="absolute bottom-1 left-1/2 -translate-x-1/2 h-0.5 w-3 rounded-full bg-primary sm:hidden" />
-                  )}
                 </Link>
               )
             })}

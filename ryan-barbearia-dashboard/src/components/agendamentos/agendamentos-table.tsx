@@ -20,30 +20,54 @@ interface AgendamentosTableProps {
 export function AgendamentosTable({ agendamentos, hasFilters, page, totalPages, total, onPage, onEdit }: AgendamentosTableProps) {
   const [loadingId, setLoadingId] = useState<string | null>(null)
 
-  async function handleCancelar(e: React.MouseEvent, id: string) {
+  function handleCancelar(e: React.MouseEvent, id: string) {
     e.stopPropagation()
-    if (!window.confirm('Cancelar este agendamento? Essa ação não pode ser desfeita.')) return
     setLoadingId(id)
-    const r = await cancelarAgendamento(id)
-    if (r.success) {
-      toast.error('Agendamento cancelado', { description: 'O status foi atualizado para Cancelado.' })
-    } else {
-      toast.error(r.error ?? 'Erro ao cancelar')
-    }
-    setLoadingId(null)
+    let undone = false
+    const timer = setTimeout(async () => {
+      if (undone) return
+      const r = await cancelarAgendamento(id)
+      if (!r.success) toast.error(r.error ?? 'Erro ao cancelar')
+      setLoadingId(null)
+    }, 5000)
+    toast.error('Agendamento cancelado', {
+      description: 'O status será atualizado para Cancelado.',
+      duration: 5000,
+      action: {
+        label: 'Desfazer',
+        onClick: () => {
+          undone = true
+          clearTimeout(timer)
+          setLoadingId(null)
+          toast.success('Ação desfeita')
+        },
+      },
+    })
   }
 
-  async function handleConcluir(e: React.MouseEvent, id: string) {
+  function handleConcluir(e: React.MouseEvent, id: string) {
     e.stopPropagation()
-    if (!window.confirm('Marcar este agendamento como concluído?')) return
     setLoadingId(id)
-    const r = await concluirAgendamento(id)
-    if (r.success) {
-      toast.success('Agendamento concluído!', { description: 'Status atualizado para Concluído.' })
-    } else {
-      toast.error(r.error ?? 'Erro')
-    }
-    setLoadingId(null)
+    let undone = false
+    const timer = setTimeout(async () => {
+      if (undone) return
+      const r = await concluirAgendamento(id)
+      if (!r.success) toast.error(r.error ?? 'Erro ao concluir')
+      setLoadingId(null)
+    }, 5000)
+    toast.success('Agendamento concluído!', {
+      description: 'O status será atualizado para Concluído.',
+      duration: 5000,
+      action: {
+        label: 'Desfazer',
+        onClick: () => {
+          undone = true
+          clearTimeout(timer)
+          setLoadingId(null)
+          toast.success('Ação desfeita')
+        },
+      },
+    })
   }
 
   return (

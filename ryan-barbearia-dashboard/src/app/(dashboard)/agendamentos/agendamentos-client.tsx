@@ -1,13 +1,13 @@
 'use client'
 
 import { useState, useMemo, useTransition } from 'react'
+import { format } from 'date-fns'
 import { useRouter } from 'next/navigation'
 import { Plus, SlidersHorizontal, X, ChevronDown } from 'lucide-react'
 import { AgendamentoSheet } from '@/components/agendamentos/agendamento-sheet'
 import { AgendamentosTable } from '@/components/agendamentos/agendamentos-table'
 import { DatePickerFilter } from '@/components/agendamentos/date-picker-filter'
 import { cn } from '@/lib/utils'
-import { format } from 'date-fns'
 import type { AgendamentoComRelacoes, Servico } from '@/lib/supabase/types'
 import { Clock, CheckCircle, CalendarCheck, XCircle, UserX } from 'lucide-react'
 
@@ -79,7 +79,8 @@ interface AgendamentosPageClientProps {
 export function AgendamentosPageClient({ agendamentos, servicos, autoOpenSheet = false }: AgendamentosPageClientProps) {
   // Múltiplos status selecionáveis
   const [filterStatuses, setFilterStatuses] = useState<string[]>([])
-  const [filterData, setFilterData] = useState('')
+  // Feature 4: filtro "Hoje" ativo por padrão
+  const [filterData, setFilterData] = useState(() => format(new Date(), 'yyyy-MM-dd'))
   const [filtersOpen, setFiltersOpen] = useState(false)
   const [page, setPage] = useState(1)
   const [sheetOpen, setSheetOpen] = useState(autoOpenSheet)
@@ -94,6 +95,12 @@ export function AgendamentosPageClient({ agendamentos, servicos, autoOpenSheet =
     concluido:  agendamentos.filter(a => a.status === 'concluido').length,
     faltou:     agendamentos.filter(a => a.status === 'faltou').length,
   }), [agendamentos])
+
+  // Feature 1: card com maior contagem recebe destaque visual
+  const maxStatusKey = useMemo(() => {
+    const entries = Object.entries(statusCounts) as [keyof typeof statusCounts, number][]
+    return entries.reduce((a, b) => b[1] > a[1] ? b : a)[0]
+  }, [statusCounts])
 
   // Filtro client-side INSTANTÂNEO — suporta múltiplos status
   const filtered = useMemo(() => {
@@ -156,30 +163,43 @@ export function AgendamentosPageClient({ agendamentos, servicos, autoOpenSheet =
         </button>
       </div>
 
-      {/* Stat cards — clicáveis, seleção múltipla */}
+      {/* Stat cards — clicáveis, seleção múltipla, card maior = status dominante */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
         {STAT_CARDS.map(card => {
           const Icon = card.icon
           const count = statusCounts[card.key]
           const isActive = filterStatuses.includes(card.key)
+          const isFeatured = card.key === maxStatusKey && count > 0
           return (
             <button
               key={card.key}
               onClick={() => toggleStatus(card.key)}
               className={cn(
-                'group relative bg-card rounded-xl border transition-all duration-200 ease-out hover:scale-[1.04] hover:-translate-y-1 p-5 flex flex-col items-center text-center gap-3 overflow-hidden cursor-pointer',
+                'group relative bg-card rounded-xl border transition-all duration-200 ease-out hover:scale-[1.04] hover:-translate-y-1 flex flex-col items-center text-center overflow-hidden cursor-pointer',
+                isFeatured ? 'p-6 gap-4' : 'p-5 gap-3',
                 isActive
                   ? cn('scale-[1.02]', card.activeBorder)
-                  : cn('border-border shadow-card hover:shadow-elevated', card.hoverBorder)
+                  : cn('border-border shadow-card hover:shadow-elevated', card.hoverBorder),
+                isFeatured && !isActive && 'shadow-elevated'
               )}
             >
               <div className="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-transparent via-primary to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
-              <div className={cn('w-9 h-9 rounded-xl flex items-center justify-center transition-all duration-200', card.iconBg)}>
-                <Icon className={cn('w-4 h-4', card.iconColor)} />
+              {isFeatured && (
+                <div className="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-transparent via-current to-transparent opacity-30" />
+              )}
+              <div className={cn(
+                'rounded-xl flex items-center justify-center transition-all duration-200',
+                isFeatured ? 'w-11 h-11' : 'w-9 h-9',
+                card.iconBg
+              )}>
+                <Icon className={cn(isFeatured ? 'w-5 h-5' : 'w-4 h-4', card.iconColor)} />
               </div>
               <div>
                 <p className="text-[11px] font-extrabold text-foreground/80 uppercase tracking-widest font-gotham">{card.label}</p>
-                <p className="text-2xl font-gotham font-black text-foreground tabular-nums leading-tight mt-1">{count}</p>
+                <p className={cn(
+                  'font-gotham font-black text-foreground tabular-nums leading-tight mt-1',
+                  isFeatured ? 'text-4xl' : 'text-2xl'
+                )}>{count}</p>
               </div>
               {isActive && (
                 <span className="text-[10px] text-primary font-bold font-gotham uppercase">✓ Ativo</span>
