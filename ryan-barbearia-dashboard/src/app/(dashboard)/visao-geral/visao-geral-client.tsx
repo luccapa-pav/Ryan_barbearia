@@ -47,13 +47,13 @@ function getPeriodRange(periodo: Periodo): { from: Date; to: Date; label: string
 }
 
 export function VisaoGeralClient({ todosAgendamentos, todosLeads, hojeStr }: VisaoGeralClientProps) {
-  const [periodo, setPeriodo] = useState<Periodo>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem(STORAGE_KEY)
-      if (saved === 'hoje' || saved === 'semana' || saved === 'mes') return saved
-    }
-    return 'hoje'
-  })
+  const [periodo, setPeriodo] = useState<Periodo>('hoje')
+
+  // Lê localStorage após hydration para evitar mismatch SSR/client
+  useEffect(() => {
+    const saved = localStorage.getItem(STORAGE_KEY)
+    if (saved === 'hoje' || saved === 'semana' || saved === 'mes') setPeriodo(saved)
+  }, [])
 
   // Ouve atalho de teclado do KeyboardShortcuts
   useEffect(() => {

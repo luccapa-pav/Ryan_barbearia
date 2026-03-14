@@ -40,7 +40,7 @@ export function ConfiguracoesPageClient({
   ]
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-6 animate-fade-up">
       <div>
         <h2 className="text-2xl font-bold text-foreground">Configurações</h2>
         <p className="text-muted-foreground text-sm mt-1">Gerencie as configurações da barbearia</p>
@@ -373,6 +373,10 @@ function BloqueiosTab({ bloqueios, onSave }: { bloqueios: Bloqueio[]; onSave: ()
 
   async function handleAdd(e: React.FormEvent) {
     e.preventDefault()
+    if (newBloqueio.data_fim < newBloqueio.data_inicio) {
+      toast.error('A data de fim deve ser igual ou posterior à data de início')
+      return
+    }
     setLoading(true)
     const result = await criarBloqueio({
       data_inicio: newBloqueio.data_inicio + 'T00:00:00',

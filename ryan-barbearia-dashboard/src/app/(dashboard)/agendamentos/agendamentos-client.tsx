@@ -9,7 +9,7 @@ import { DatePickerFilter } from '@/components/agendamentos/date-picker-filter'
 import { cn } from '@/lib/utils'
 import { format } from 'date-fns'
 import type { AgendamentoComRelacoes, Servico } from '@/lib/supabase/types'
-import { Clock, CheckCircle, CalendarCheck, XCircle } from 'lucide-react'
+import { Clock, CheckCircle, CalendarCheck, XCircle, UserX } from 'lucide-react'
 
 const PAGE_SIZE = 20
 
@@ -59,6 +59,15 @@ const STAT_CARDS = [
     activeBorder: 'border-emerald-400 shadow-[0_0_0_1px_theme(colors.emerald.400)]',
     hoverBorder: 'hover:border-emerald-200 dark:hover:border-emerald-500',
   },
+  {
+    key: 'faltou',
+    label: 'Faltaram',
+    icon: UserX,
+    iconBg: 'bg-violet-50 dark:bg-violet-500/20',
+    iconColor: 'text-violet-300 dark:text-violet-400',
+    activeBorder: 'border-violet-400 shadow-[0_0_0_1px_theme(colors.violet.400)]',
+    hoverBorder: 'hover:border-violet-200 dark:hover:border-violet-500',
+  },
 ] as const
 
 interface AgendamentosPageClientProps {
@@ -81,6 +90,7 @@ export function AgendamentosPageClient({ agendamentos, servicos }: AgendamentosP
     confirmado: agendamentos.filter(a => a.status === 'confirmado').length,
     cancelado:  agendamentos.filter(a => a.status === 'cancelado').length,
     concluido:  agendamentos.filter(a => a.status === 'concluido').length,
+    faltou:     agendamentos.filter(a => a.status === 'faltou').length,
   }), [agendamentos])
 
   // Filtro client-side INSTANTÂNEO — suporta múltiplos status
@@ -142,7 +152,7 @@ export function AgendamentosPageClient({ agendamentos, servicos }: AgendamentosP
       </div>
 
       {/* Stat cards — clicáveis, seleção múltipla */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
         {STAT_CARDS.map(card => {
           const Icon = card.icon
           const count = statusCounts[card.key]

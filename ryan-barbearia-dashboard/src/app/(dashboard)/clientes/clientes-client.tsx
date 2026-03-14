@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { Search, Users, UserPlus, CalendarCheck, Phone, X, Clock, CheckCircle, CalendarDays, Plus, DollarSign } from 'lucide-react'
 import { format, isThisMonth } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
@@ -67,10 +67,7 @@ export function ClientesPageClient({ clientes, agendamentos }: ClientesPageClien
     const now = new Date()
     const novosEsteMes = clientes.filter(c => isThisMonth(new Date(c.criado_em))).length
     const totalConcluidos = agendamentos.filter(a => a.status === 'concluido').length
-    const receitaTotal = agendamentos
-      .filter(a => a.status === 'concluido')
-      .reduce((s, a) => s + (a.servicos?.preco ?? 0), 0)
-    return { novosEsteMes, totalConcluidos, receitaTotal }
+    return { novosEsteMes, totalConcluidos }
   }, [clientes, agendamentos])
 
   // Busca client-side instantânea
@@ -404,20 +401,41 @@ function ClienteDetalhe({ cliente, stats, onClose }: ClienteDetalheProps) {
 
 // ── Modal Novo Cliente ────────────────────────────────────────────────────────
 
+function formatPhone(value: string): string {
+  const digits = value.replace(/\D/g, '').slice(0, 11)
+  if (digits.length <= 2) return digits
+  if (digits.length <= 7) return `(${digits.slice(0, 2)}) ${digits.slice(2)}`
+  return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`
+}
+
 function NovoClienteModal({ onClose }: { onClose: () => void }) {
   const [nome, setNome]               = useState('')
   const [telefone, setTelefone]       = useState('')
   const [observacoes, setObservacoes] = useState('')
   const [loading, setLoading]         = useState(false)
 
+  // Fecha modal com ESC
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') onClose()
+    }
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [onClose])
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!nome.trim() || !telefone.trim()) return
+    const phoneDigits = telefone.replace(/\D/g, '')
+    if (phoneDigits.length < 10 || phoneDigits.length > 11) {
+      toast.error('Telefone inválido. Use (00) 00000-0000')
+      return
+    }
     setLoading(true)
     try {
       const result = await criarCliente({
         nome: nome.trim(),
-        telefone: telefone.trim(),
+        telefone: phoneDigits,
         observacoes: observacoes.trim() || null,
       })
       if (result.success) {
@@ -490,7 +508,7 @@ function NovoClienteModal({ onClose }: { onClose: () => void }) {
               <input
                 type="tel"
                 value={telefone}
-                onChange={e => setTelefone(e.target.value)}
+                onChange={e => setTelefone(formatPhone(e.target.value))}
                 placeholder="(00) 00000-0000"
                 required
                 className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"

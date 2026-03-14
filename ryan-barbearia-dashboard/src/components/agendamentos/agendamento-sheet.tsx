@@ -51,6 +51,16 @@ export function AgendamentoSheet({ open, onClose, agendamento, servicos }: Agend
     return () => document.removeEventListener('mousedown', handler)
   }, [])
 
+  // Fecha modal com ESC
+  useEffect(() => {
+    if (!open) return
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') onClose()
+    }
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [open, onClose])
+
   // Preenche ao editar
   useEffect(() => {
     if (!open) return
@@ -148,6 +158,9 @@ export function AgendamentoSheet({ open, onClose, agendamento, servicos }: Agend
   }
 
   const servicoAtivo = servicos.find(s => s.id === selectedServico)
+  const isCurrentOrPastMonth =
+    calView.getFullYear() < today.getFullYear() ||
+    (calView.getFullYear() === today.getFullYear() && calView.getMonth() <= today.getMonth())
 
   return (
     <>
@@ -244,7 +257,7 @@ export function AgendamentoSheet({ open, onClose, agendamento, servicos }: Agend
                   <Scissors className="w-3 h-3" />
                   Serviço *
                 </label>
-                <div className="grid grid-cols-1 gap-1.5">
+                <div className="grid grid-cols-1 gap-1.5 max-h-[200px] overflow-y-auto pr-1">
                   {servicos.map(s => {
                     const active = selectedServico === s.id
                     return (
@@ -303,7 +316,8 @@ export function AgendamentoSheet({ open, onClose, agendamento, servicos }: Agend
                     <button
                       type="button"
                       onClick={() => setCalView(d => subMonths(d, 1))}
-                      className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+                      disabled={isCurrentOrPastMonth}
+                      className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors disabled:opacity-20 disabled:cursor-not-allowed"
                     >
                       <ChevronLeft className="w-4 h-4" />
                     </button>

@@ -17,6 +17,7 @@ export async function criarAgendamento(data: Omit<AgendamentoInsert, 'origem'>) 
     return { success: false, error: error.message }
   }
 
+  revalidatePath('/visao-geral')
   revalidatePath('/hoje')
   revalidatePath('/agendamentos')
   revalidatePath('/calendario')
@@ -38,6 +39,7 @@ export async function atualizarAgendamento(id: string, data: AgendamentoUpdate) 
     return { success: false, error: error.message }
   }
 
+  revalidatePath('/visao-geral')
   revalidatePath('/hoje')
   revalidatePath('/agendamentos')
   revalidatePath('/calendario')
@@ -74,7 +76,7 @@ export async function buscarSlotsDisponiveis(
       .select('data_hora, servico_id, servicos(duracao_minutos)')
       .gte('data_hora', `${data}T00:00:00`)
       .lt('data_hora', `${data}T23:59:59`)
-      .not('status', 'in', '("cancelado")')
+      .not('status', 'in', '(cancelado,faltou)')
       .neq('id', agendamentoIdExcluir ?? '00000000-0000-0000-0000-000000000000'),
     supabase
       .from('configuracoes')

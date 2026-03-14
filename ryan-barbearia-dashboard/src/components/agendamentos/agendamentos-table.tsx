@@ -1,6 +1,6 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
+import { useState } from 'react'
 import { Edit, CheckCircle, XCircle, ChevronLeft, ChevronRight, CalendarOff } from 'lucide-react'
 import { cn, formatarDataHora, formatarMoeda, STATUS_LABELS, STATUS_COLORS, ORIGEM_LABELS } from '@/lib/utils'
 import { cancelarAgendamento, concluirAgendamento } from '@/actions/agendamentos'
@@ -18,18 +18,22 @@ interface AgendamentosTableProps {
 }
 
 export function AgendamentosTable({ agendamentos, hasFilters, page, totalPages, total, onPage, onEdit }: AgendamentosTableProps) {
-  const router = useRouter()
+  const [loadingId, setLoadingId] = useState<string | null>(null)
 
   async function handleCancelar(id: string) {
+    if (!window.confirm('Cancelar este agendamento? Essa ação não pode ser desfeita.')) return
+    setLoadingId(id)
     const r = await cancelarAgendamento(id)
     r.success ? toast.success('Agendamento cancelado') : toast.error(r.error ?? 'Erro ao cancelar')
-    router.refresh()
+    setLoadingId(null)
   }
 
   async function handleConcluir(id: string) {
+    if (!window.confirm('Marcar este agendamento como concluído?')) return
+    setLoadingId(id)
     const r = await concluirAgendamento(id)
     r.success ? toast.success('Marcado como concluído') : toast.error(r.error ?? 'Erro')
-    router.refresh()
+    setLoadingId(null)
   }
 
   return (
@@ -74,16 +78,31 @@ export function AgendamentosTable({ agendamentos, hasFilters, page, totalPages, 
                   </td>
                   <td className="px-4 py-3.5 text-xs text-muted-foreground">{ORIGEM_LABELS[a.origem] ?? a.origem}</td>
                   <td className="px-4 py-3.5">
-                    <div className="flex items-center gap-1 justify-end opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button onClick={() => onEdit(a)} className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors" title="Editar">
+                    <div className="flex items-center gap-1 justify-end sm:opacity-0 sm:group-hover:opacity-100 sm:transition-opacity">
+                      <button
+                        onClick={() => onEdit(a)}
+                        disabled={loadingId === a.id}
+                        className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors disabled:opacity-40"
+                        title="Editar"
+                      >
                         <Edit className="w-3.5 h-3.5" />
                       </button>
                       {(a.status === 'pendente' || a.status === 'confirmado') && (
                         <>
-                          <button onClick={() => handleConcluir(a.id)} className="p-1.5 rounded-lg text-muted-foreground hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 transition-colors" title="Concluir">
+                          <button
+                            onClick={() => handleConcluir(a.id)}
+                            disabled={loadingId === a.id}
+                            className="p-1.5 rounded-lg text-muted-foreground hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 transition-colors disabled:opacity-40"
+                            title="Concluir"
+                          >
                             <CheckCircle className="w-3.5 h-3.5" />
                           </button>
-                          <button onClick={() => handleCancelar(a.id)} className="p-1.5 rounded-lg text-muted-foreground hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors" title="Cancelar">
+                          <button
+                            onClick={() => handleCancelar(a.id)}
+                            disabled={loadingId === a.id}
+                            className="p-1.5 rounded-lg text-muted-foreground hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors disabled:opacity-40"
+                            title="Cancelar"
+                          >
                             <XCircle className="w-3.5 h-3.5" />
                           </button>
                         </>
