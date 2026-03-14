@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { createClient } from '@/lib/supabase/client'
 import { AgendamentoCard } from './agendamento-card'
@@ -15,6 +15,11 @@ interface TimelineHojeProps {
 
 export function TimelineHoje({ agendamentosIniciais, hojeStr }: TimelineHojeProps) {
   const [agendamentos, setAgendamentos] = useState<AgendamentoComRelacoes[]>(agendamentosIniciais)
+  const originalTitle = useRef<string>('')
+
+  useEffect(() => {
+    originalTitle.current = document.title
+  }, [])
 
   useEffect(() => {
     const supabase = createClient()
@@ -23,7 +28,7 @@ export function TimelineHoje({ agendamentosIniciais, hojeStr }: TimelineHojeProp
       .on('postgres_changes', {
         event: '*', schema: 'public', table: 'agendamentos',
         filter: `data_hora=gte.${hojeStr}T00:00:00`,
-      }, async () => {
+      }, async (payload) => {
         const amanha = new Date(hojeStr)
         amanha.setDate(amanha.getDate() + 1)
         const { data } = await supabase
@@ -35,10 +40,22 @@ export function TimelineHoje({ agendamentosIniciais, hojeStr }: TimelineHojeProp
           .order('data_hora', { ascending: true })
         if (data) {
           setAgendamentos(data as AgendamentoComRelacoes[])
-          toast.success('Novo agendamento!', {
-            description: 'A agenda foi atualizada.',
-            duration: 4000,
-          })
+
+          // Flash na aba do navegador apenas para novos agendamentos
+          if (payload.eventType === 'INSERT') {
+            const base = originalTitle.current || document.title
+            let i = 0
+            const iv = setInterval(() => {
+              document.title = i++ % 2 === 0 ? '🔔 Novo agendamento!' : base
+              if (i >= 8) { clearInterval(iv); document.title = base }
+            }, 500)
+            toast.success('Novo agendamento!', {
+              description: 'A agenda foi atualizada.',
+              duration: 4000,
+            })
+          } else {
+            toast.info('Agenda atualizada', { duration: 3000 })
+          }
         }
       })
       .subscribe()

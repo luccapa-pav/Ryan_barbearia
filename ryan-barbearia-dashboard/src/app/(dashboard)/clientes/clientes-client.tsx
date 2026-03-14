@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useMemo, useEffect } from 'react'
-import { Search, Users, UserPlus, CalendarCheck, Phone, X, Clock, CheckCircle, CalendarDays, Plus, DollarSign, Scissors, MessageCircle } from 'lucide-react'
+import { Search, Users, UserPlus, CalendarCheck, Phone, X, Clock, CheckCircle, CalendarDays, Plus, DollarSign, Scissors, MessageCircle, Star } from 'lucide-react'
 import { format, isThisMonth } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { toast } from 'sonner'
@@ -304,6 +304,24 @@ interface ClienteDetalheProps {
 function ClienteDetalhe({ cliente, stats, crm, onClose }: ClienteDetalheProps) {
   const color = avatarColor(cliente.nome)
 
+  // Serviço mais realizado (concluído)
+  const servicoFavorito = useMemo(() => {
+    const map: Record<string, number> = {}
+    for (const a of stats.servicos) {
+      if (a.status === 'concluido' && a.servicos?.nome) {
+        map[a.servicos.nome] = (map[a.servicos.nome] ?? 0) + 1
+      }
+    }
+    const sorted = Object.entries(map).sort((a, b) => b[1] - a[1])
+    return sorted[0]?.[0] ?? null
+  }, [stats.servicos])
+
+  // Histórico ordenado do mais recente para o mais antigo
+  const historico = useMemo(
+    () => [...stats.servicos].sort((a, b) => b.data_hora.localeCompare(a.data_hora)),
+    [stats.servicos]
+  )
+
   return (
     <div className="bg-card border border-border rounded-2xl overflow-hidden sticky top-20">
 
@@ -334,24 +352,28 @@ function ClienteDetalhe({ cliente, stats, crm, onClose }: ClienteDetalheProps) {
         </div>
 
         {/* Mini stats */}
-        <div className="grid grid-cols-3 gap-2 mt-4">
+        <div className={cn('grid gap-2 mt-4', servicoFavorito ? 'grid-cols-4' : 'grid-cols-3')}>
           {[
             { label: 'Visitas', value: stats.concluidos, icon: CheckCircle, color: 'text-emerald-400' },
             { label: 'Gasto', value: formatarMoeda(stats.totalGasto), icon: DollarSign, color: 'text-primary' },
             {
               label: 'Última',
-              value: stats.ultimaVisita
-                ? format(new Date(stats.ultimaVisita), 'dd/MM/yy')
-                : '—',
+              value: stats.ultimaVisita ? format(new Date(stats.ultimaVisita), 'dd/MM/yy') : '—',
               icon: Clock,
               color: 'text-muted-foreground',
             },
+            ...(servicoFavorito ? [{
+              label: 'Favorito',
+              value: servicoFavorito,
+              icon: Star,
+              color: 'text-amber-400',
+            }] : []),
           ].map(item => {
             const Icon = item.icon
             return (
               <div key={item.label} className="bg-muted/40 rounded-xl p-3 text-center">
                 <Icon className={cn('w-4 h-4 mx-auto mb-1', item.color)} />
-                <p className="text-xs font-bold text-foreground truncate">{item.value}</p>
+                <p className="text-xs font-bold text-foreground truncate" title={String(item.value)}>{item.value}</p>
                 <p className="text-[10px] text-muted-foreground mt-0.5 font-gotham uppercase tracking-wide">{item.label}</p>
               </div>
             )
@@ -365,36 +387,45 @@ function ClienteDetalhe({ cliente, stats, crm, onClose }: ClienteDetalheProps) {
           Histórico de visitas
         </p>
 
-        {stats.servicos.length === 0 ? (
+        {historico.length === 0 ? (
           <div className="flex flex-col items-center py-8 text-muted-foreground gap-2">
             <CalendarDays className="w-7 h-7 opacity-25" />
             <p className="text-xs">Nenhum agendamento ainda</p>
           </div>
         ) : (
-          <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
-            {stats.servicos.map((a, i) => (
+          <div className="space-y-0 max-h-72 overflow-y-auto pr-1 divide-y divide-border/40">
+            {historico.map((a, i) => (
               <div
                 key={a.id ?? i}
-                className="flex items-center gap-3 py-2.5 border-b border-border/40 last:border-0"
+                className="flex items-center gap-3 py-2.5"
               >
+                {/* Dot de status */}
+                <div className={cn(
+                  'w-2 h-2 rounded-full shrink-0',
+                  a.status === 'concluido' ? 'bg-emerald-400' :
+                  a.status === 'cancelado' ? 'bg-red-400' :
+                  a.status === 'faltou'    ? 'bg-violet-400' :
+                  'bg-muted-foreground/40'
+                )} />
                 <div className="min-w-0 flex-1">
-                  <p className="text-sm font-semibold text-foreground truncate">
+                  <p className="text-sm font-semibold text-foreground truncate leading-tight">
                     {a.servicos?.nome ?? 'Serviço'}
                   </p>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    {format(new Date(a.data_hora), "dd 'de' MMM yyyy · HH:mm", { locale: ptBR })}
+                  <p className="text-[11px] text-muted-foreground mt-0.5">
+                    {format(new Date(a.data_hora), "dd MMM yyyy · HH:mm", { locale: ptBR })}
                   </p>
                 </div>
                 <div className="flex flex-col items-end gap-1 shrink-0">
-                  <span className={cn(
-                    'text-[10px] font-bold font-gotham uppercase px-2 py-0.5 rounded-lg border',
-                    STATUS_COLORS[a.status]
-                  )}>
-                    {STATUS_LABELS[a.status]}
-                  </span>
-                  {a.servicos?.preco && a.status === 'concluido' && (
-                    <span className="text-[10px] font-bold text-primary">
+                  {a.status === 'concluido' && a.servicos?.preco ? (
+                    <span className="text-xs font-bold text-primary tabular-nums">
                       {formatarMoeda(a.servicos.preco)}
+                    </span>
+                  ) : (
+                    <span className={cn(
+                      'text-[10px] font-bold font-gotham uppercase px-1.5 py-0.5 rounded border',
+                      STATUS_COLORS[a.status]
+                    )}>
+                      {STATUS_LABELS[a.status]}
                     </span>
                   )}
                 </div>

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { Plus, SlidersHorizontal, X, ChevronDown } from 'lucide-react'
 import { AgendamentoSheet } from '@/components/agendamentos/agendamento-sheet'
@@ -84,6 +84,7 @@ export function AgendamentosPageClient({ agendamentos, servicos, autoOpenSheet =
   const [page, setPage] = useState(1)
   const [sheetOpen, setSheetOpen] = useState(autoOpenSheet)
   const [editingAgendamento, setEditingAgendamento] = useState<AgendamentoComRelacoes | null>(null)
+  const [, startTransition] = useTransition()
   const router = useRouter()
 
   const statusCounts = useMemo(() => ({
@@ -108,19 +109,25 @@ export function AgendamentosPageClient({ agendamentos, servicos, autoOpenSheet =
   const activeFiltersCount = filterStatuses.length + (filterData ? 1 : 0)
 
   function toggleStatus(status: string) {
-    setFilterStatuses(prev =>
-      prev.includes(status) ? prev.filter(s => s !== status) : [...prev, status]
-    )
-    setPage(1)
+    startTransition(() => {
+      setFilterStatuses(prev =>
+        prev.includes(status) ? prev.filter(s => s !== status) : [...prev, status]
+      )
+      setPage(1)
+    })
   }
 
-  function setDate(v: string) { setFilterData(v); setPage(1) }
+  function setDate(v: string) {
+    startTransition(() => { setFilterData(v); setPage(1) })
+  }
 
   function clearAll() {
-    setFilterStatuses([])
-    setFilterData('')
-    setFiltersOpen(false)
-    setPage(1)
+    startTransition(() => {
+      setFilterStatuses([])
+      setFilterData('')
+      setFiltersOpen(false)
+      setPage(1)
+    })
   }
 
   function handleClose() {
