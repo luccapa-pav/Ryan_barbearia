@@ -6,6 +6,8 @@ export default async function DashboardLayout({ children }: { children: React.Re
   const { data: { user } } = await supabase.auth.getUser()
 
   let isAdmin = false
+  let pendentesCount = 0
+
   if (user) {
     const { data: perfil } = await supabase
       .from('perfis')
@@ -13,7 +15,19 @@ export default async function DashboardLayout({ children }: { children: React.Re
       .eq('user_id', user.id)
       .single()
     isAdmin = perfil?.role === 'admin'
+
+    if (isAdmin) {
+      const { count } = await supabase
+        .from('perfis')
+        .select('id', { count: 'exact', head: true })
+        .eq('status', 'pendente')
+      pendentesCount = count ?? 0
+    }
   }
 
-  return <DashboardShell isAdmin={isAdmin}>{children}</DashboardShell>
+  return (
+    <DashboardShell isAdmin={isAdmin} pendentesCount={pendentesCount}>
+      {children}
+    </DashboardShell>
+  )
 }

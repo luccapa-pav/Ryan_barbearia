@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
-import { aprovarUsuario, recusarUsuario } from '@/actions/auth'
 import { ShieldCheck, UserCheck, UserX, Clock } from 'lucide-react'
+import { AdminActions, ReativarAction } from './admin-actions'
 
 type Perfil = {
   id: string
@@ -111,28 +111,7 @@ export default async function AdminPage() {
                 key={p.id}
                 perfil={p}
                 avatarColor="bg-amber-500"
-                actions={
-                  <>
-                    <form action={aprovarUsuario.bind(null, p.user_id)}>
-                      <button
-                        type="submit"
-                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-green-600 hover:bg-green-500 active:scale-95 text-white text-xs font-semibold transition-all duration-150"
-                      >
-                        <UserCheck className="h-3.5 w-3.5" />
-                        <span className="hidden sm:inline">Aprovar</span>
-                      </button>
-                    </form>
-                    <form action={recusarUsuario.bind(null, p.user_id)}>
-                      <button
-                        type="submit"
-                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-card hover:bg-red-500/10 active:scale-95 border border-border hover:border-red-500/30 text-muted-foreground hover:text-red-500 text-xs font-semibold transition-all duration-150"
-                      >
-                        <UserX className="h-3.5 w-3.5" />
-                        <span className="hidden sm:inline">Recusar</span>
-                      </button>
-                    </form>
-                  </>
-                }
+                actions={<AdminActions userId={p.user_id} nome={p.nome} />}
               />
             ))}
           </div>
@@ -183,17 +162,7 @@ export default async function AdminPage() {
                 key={p.id}
                 perfil={p}
                 avatarColor="bg-muted-foreground/40"
-                actions={
-                  <form action={aprovarUsuario.bind(null, p.user_id)}>
-                    <button
-                      type="submit"
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-card hover:bg-green-500/10 active:scale-95 border border-border hover:border-green-500/30 text-muted-foreground hover:text-green-600 text-xs font-semibold transition-all duration-150"
-                    >
-                      <UserCheck className="h-3.5 w-3.5" />
-                      <span className="hidden sm:inline">Reativar</span>
-                    </button>
-                  </form>
-                }
+                actions={<ReativarAction userId={p.user_id} nome={p.nome} />}
               />
             ))}
           </div>

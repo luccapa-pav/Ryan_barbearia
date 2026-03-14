@@ -4,7 +4,8 @@ import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { createClient } from '@/lib/supabase/client'
 import { AgendamentoCard } from './agendamento-card'
-import { CalendarOff } from 'lucide-react'
+import { CalendarOff, Plus } from 'lucide-react'
+import Link from 'next/link'
 import type { AgendamentoComRelacoes } from '@/lib/supabase/types'
 
 interface TimelineHojeProps {
@@ -46,14 +47,23 @@ export function TimelineHoje({ agendamentosIniciais, hojeStr }: TimelineHojeProp
 
   if (agendamentos.length === 0) {
     return (
-      <div className="bg-card border border-border rounded-xl shadow-card p-12 flex flex-col items-center text-center gap-3">
+      <div className="bg-card border border-border rounded-xl shadow-card p-12 flex flex-col items-center text-center gap-4">
         <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center">
           <CalendarOff className="w-5 h-5 text-muted-foreground" />
         </div>
-        <p className="font-semibold text-foreground">Nenhum agendamento hoje</p>
-        <p className="text-sm text-muted-foreground max-w-xs">
-          Novos agendamentos via WhatsApp aparecerão aqui automaticamente.
-        </p>
+        <div className="space-y-1">
+          <p className="font-semibold text-foreground">Nenhum agendamento hoje</p>
+          <p className="text-sm text-muted-foreground max-w-xs">
+            Novos agendamentos via WhatsApp aparecerão aqui automaticamente.
+          </p>
+        </div>
+        <Link
+          href="/agendamentos?novo=1"
+          className="flex items-center gap-2 px-4 py-2 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground text-sm font-bold transition-all duration-200 hover:scale-105 active:scale-95 shadow-brand"
+        >
+          <Plus className="w-4 h-4" />
+          Novo agendamento
+        </Link>
       </div>
     )
   }

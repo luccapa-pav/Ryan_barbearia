@@ -73,15 +73,16 @@ const STAT_CARDS = [
 interface AgendamentosPageClientProps {
   agendamentos: AgendamentoComRelacoes[]
   servicos: Servico[]
+  autoOpenSheet?: boolean
 }
 
-export function AgendamentosPageClient({ agendamentos, servicos }: AgendamentosPageClientProps) {
+export function AgendamentosPageClient({ agendamentos, servicos, autoOpenSheet = false }: AgendamentosPageClientProps) {
   // Múltiplos status selecionáveis
   const [filterStatuses, setFilterStatuses] = useState<string[]>([])
   const [filterData, setFilterData] = useState('')
   const [filtersOpen, setFiltersOpen] = useState(false)
   const [page, setPage] = useState(1)
-  const [sheetOpen, setSheetOpen] = useState(false)
+  const [sheetOpen, setSheetOpen] = useState(autoOpenSheet)
   const [editingAgendamento, setEditingAgendamento] = useState<AgendamentoComRelacoes | null>(null)
   const router = useRouter()
 

@@ -4,8 +4,13 @@ import type { AgendamentoComRelacoes, Servico } from '@/lib/supabase/types'
 
 export const revalidate = 30
 
-export default async function AgendamentosPage() {
+export default async function AgendamentosPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ novo?: string }>
+}) {
   const supabase = await createClient()
+  const { novo } = await searchParams
 
   const [agendamentosRes, servicosRes] = await Promise.all([
     supabase
@@ -20,6 +25,7 @@ export default async function AgendamentosPage() {
     <AgendamentosPageClient
       agendamentos={(agendamentosRes.data ?? []) as AgendamentoComRelacoes[]}
       servicos={(servicosRes.data ?? []) as Servico[]}
+      autoOpenSheet={novo === '1'}
     />
   )
 }

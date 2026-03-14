@@ -7,8 +7,22 @@ interface AgendamentoCardProps {
 
 const FLASH_STATUS = new Set(['confirmado', 'concluido'])
 
+function tempoRelativo(dataHora: string): string {
+  const diff = Math.round((new Date(dataHora).getTime() - Date.now()) / 60000)
+  if (diff > 0) {
+    if (diff < 60) return `em ${diff}min`
+    const h = Math.round(diff / 60)
+    return `em ${h}h`
+  }
+  const abs = Math.abs(diff)
+  if (abs < 60) return abs <= 2 ? 'agora' : `há ${abs}min`
+  const h = Math.round(abs / 60)
+  return `há ${h}h`
+}
+
 export function AgendamentoCard({ agendamento }: AgendamentoCardProps) {
   const hora = formatarHora(agendamento.data_hora)
+  const relativo = tempoRelativo(agendamento.data_hora)
   const hasFlash = FLASH_STATUS.has(agendamento.status)
 
   return (
@@ -19,9 +33,7 @@ export function AgendamentoCard({ agendamento }: AgendamentoCardProps) {
       {/* Hora */}
       <div className="w-16 shrink-0 text-center">
         <p className="text-base font-display font-bold text-primary leading-none">{hora}</p>
-        <p className="text-[11px] text-muted-foreground mt-1">
-          {agendamento.servicos?.duracao_minutos}min
-        </p>
+        <p className="text-[10px] text-muted-foreground/60 mt-0.5 tabular-nums">{relativo}</p>
       </div>
 
       {/* Linha vertical */}
@@ -35,7 +47,10 @@ export function AgendamentoCard({ agendamento }: AgendamentoCardProps) {
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <p className="font-semibold text-foreground text-sm leading-tight">{agendamento.clientes?.nome}</p>
-            <p className="text-xs text-muted-foreground mt-0.5">{agendamento.servicos?.nome}</p>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              {agendamento.servicos?.nome}
+              <span className="text-muted-foreground/50 ml-1">· {agendamento.servicos?.duracao_minutos}min</span>
+            </p>
           </div>
           <div className="flex flex-col items-end gap-1.5 shrink-0">
             <span className={cn(
