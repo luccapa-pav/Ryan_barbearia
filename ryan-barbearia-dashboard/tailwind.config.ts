@@ -58,7 +58,7 @@ const config: Config = {
       boxShadow: {
         elevated: '0 4px 24px -4px rgba(0,0,0,0.10)',
         brand: '0 4px 24px -4px rgba(232,112,26,0.35)',
-        card: '0 1px 3px 0 rgba(0,0,0,0.06), 0 1px 2px -1px rgba(0,0,0,0.04)',
+        card: '2px 4px 10px -2px rgba(0,0,0,0.09), 0 1px 2px 0 rgba(0,0,0,0.04)',
       },
       backgroundImage: {
         'brand-gradient': 'linear-gradient(135deg, #E8701A 0%, #C45E14 100%)',

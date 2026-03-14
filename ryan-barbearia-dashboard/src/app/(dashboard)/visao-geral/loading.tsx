@@ -6,7 +6,7 @@ function Skeleton({ className }: { className?: string }) {
 
 function CardSkeleton() {
   return (
-    <div className="bg-card rounded-xl border border-zinc-300 dark:border-zinc-600 shadow-card p-5 flex flex-col items-center gap-4">
+    <div className="bg-card rounded-xl border border-border shadow-card p-5 flex flex-col items-center gap-4">
       <Skeleton className="w-9 h-9 rounded-xl" />
       <Skeleton className="w-20 h-3" />
       <Skeleton className="w-14 h-7" />
@@ -43,7 +43,7 @@ export default function VisaoGeralLoading() {
 
       {/* Charts skeleton */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-        <div className="bg-card rounded-xl border border-zinc-300 dark:border-zinc-600 shadow-card p-5 space-y-4">
+        <div className="bg-card rounded-xl border border-border shadow-card p-5 space-y-4">
           <Skeleton className="w-40 h-4 mx-auto" />
           <div className="space-y-3 pt-1">
             {Array.from({ length: 4 }).map((_, i) => (
@@ -55,7 +55,7 @@ export default function VisaoGeralLoading() {
             ))}
           </div>
         </div>
-        <div className="bg-card rounded-xl border border-zinc-300 dark:border-zinc-600 shadow-card p-5 space-y-4">
+        <div className="bg-card rounded-xl border border-border shadow-card p-5 space-y-4">
           <Skeleton className="w-44 h-4 mx-auto" />
           <div className="space-y-3 pt-1">
             {Array.from({ length: 3 }).map((_, i) => (

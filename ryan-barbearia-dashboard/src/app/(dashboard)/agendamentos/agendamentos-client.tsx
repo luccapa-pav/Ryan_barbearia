@@ -166,7 +166,7 @@ export function AgendamentosPageClient({ agendamentos, servicos, autoOpenSheet =
                 'group relative bg-card rounded-xl border transition-all duration-200 ease-out hover:scale-[1.04] hover:-translate-y-1 p-5 flex flex-col items-center text-center gap-3 overflow-hidden cursor-pointer',
                 isActive
                   ? cn('scale-[1.02]', card.activeBorder)
-                  : cn('border-zinc-300 dark:border-zinc-600 shadow-card hover:shadow-elevated', card.hoverBorder)
+                  : cn('border-border shadow-card hover:shadow-elevated', card.hoverBorder)
               )}
             >
               <div className="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-transparent via-primary to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200" />

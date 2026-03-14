@@ -22,7 +22,7 @@ export default function AgendamentosLoading() {
       </div>
 
       {/* Tabela */}
-      <div className="bg-card rounded-xl border border-zinc-300 dark:border-zinc-600 shadow-card overflow-hidden">
+      <div className="bg-card rounded-xl border border-border shadow-card overflow-hidden">
         {/* Header */}
         <div className="flex gap-4 px-4 py-3 border-b border-border bg-muted/40">
           {[120, 160, 120, 80, 90, 70].map((w, i) => (

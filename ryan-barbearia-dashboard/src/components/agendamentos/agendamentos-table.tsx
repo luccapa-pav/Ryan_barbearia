@@ -47,7 +47,7 @@ export function AgendamentosTable({ agendamentos, hasFilters, page, totalPages, 
   }
 
   return (
-    <div className="bg-card rounded-xl border border-zinc-300 dark:border-zinc-600 shadow-card overflow-hidden">
+    <div className="bg-card rounded-xl border border-border shadow-card overflow-hidden">
       {agendamentos.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 gap-3 text-center">
           <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center">
@@ -85,8 +85,8 @@ export function AgendamentosTable({ agendamentos, hasFilters, page, totalPages, 
                   </td>
                   <td className="px-4 py-3.5 text-sm text-foreground">{a.servicos?.nome}</td>
                   <td className="px-4 py-3.5 text-sm font-bold text-foreground tabular-nums">{formatarMoeda(a.servicos?.preco ?? 0)}</td>
-                  <td className="px-4 py-3.5">
-                    <span className={cn('inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold border', STATUS_COLORS[a.status])}>
+                  <td className="px-4 py-3.5 w-28">
+                    <span className={cn('inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold border whitespace-nowrap', STATUS_COLORS[a.status])}>
                       {STATUS_LABELS[a.status]}
                     </span>
                   </td>
