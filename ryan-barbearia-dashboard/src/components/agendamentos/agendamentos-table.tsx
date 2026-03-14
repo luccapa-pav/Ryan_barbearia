@@ -20,19 +20,29 @@ interface AgendamentosTableProps {
 export function AgendamentosTable({ agendamentos, hasFilters, page, totalPages, total, onPage, onEdit }: AgendamentosTableProps) {
   const [loadingId, setLoadingId] = useState<string | null>(null)
 
-  async function handleCancelar(id: string) {
+  async function handleCancelar(e: React.MouseEvent, id: string) {
+    e.stopPropagation()
     if (!window.confirm('Cancelar este agendamento? Essa ação não pode ser desfeita.')) return
     setLoadingId(id)
     const r = await cancelarAgendamento(id)
-    r.success ? toast.success('Agendamento cancelado') : toast.error(r.error ?? 'Erro ao cancelar')
+    if (r.success) {
+      toast.error('Agendamento cancelado', { description: 'O status foi atualizado para Cancelado.' })
+    } else {
+      toast.error(r.error ?? 'Erro ao cancelar')
+    }
     setLoadingId(null)
   }
 
-  async function handleConcluir(id: string) {
+  async function handleConcluir(e: React.MouseEvent, id: string) {
+    e.stopPropagation()
     if (!window.confirm('Marcar este agendamento como concluído?')) return
     setLoadingId(id)
     const r = await concluirAgendamento(id)
-    r.success ? toast.success('Marcado como concluído') : toast.error(r.error ?? 'Erro')
+    if (r.success) {
+      toast.success('Agendamento concluído!', { description: 'Status atualizado para Concluído.' })
+    } else {
+      toast.error(r.error ?? 'Erro')
+    }
     setLoadingId(null)
   }
 
@@ -63,7 +73,11 @@ export function AgendamentosTable({ agendamentos, hasFilters, page, totalPages, 
             </thead>
             <tbody className="divide-y divide-border">
               {agendamentos.map(a => (
-                <tr key={a.id} className="hover:bg-muted/30 transition-colors group">
+                <tr
+                  key={a.id}
+                  onClick={() => onEdit(a)}
+                  className="hover:bg-muted/40 transition-colors group cursor-pointer"
+                >
                   <td className="px-4 py-3.5 text-sm font-medium text-foreground whitespace-nowrap tabular-nums">{formatarDataHora(a.data_hora)}</td>
                   <td className="px-4 py-3.5">
                     <p className="text-sm font-semibold text-foreground leading-tight">{a.clientes?.nome}</p>
@@ -77,10 +91,10 @@ export function AgendamentosTable({ agendamentos, hasFilters, page, totalPages, 
                     </span>
                   </td>
                   <td className="px-4 py-3.5 text-xs text-muted-foreground">{ORIGEM_LABELS[a.origem] ?? a.origem}</td>
-                  <td className="px-4 py-3.5">
+                  <td className="px-4 py-3.5" onClick={e => e.stopPropagation()}>
                     <div className="flex items-center gap-1 justify-end sm:opacity-0 sm:group-hover:opacity-100 sm:transition-opacity">
                       <button
-                        onClick={() => onEdit(a)}
+                        onClick={e => { e.stopPropagation(); onEdit(a) }}
                         disabled={loadingId === a.id}
                         className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors disabled:opacity-40"
                         title="Editar"
@@ -90,7 +104,7 @@ export function AgendamentosTable({ agendamentos, hasFilters, page, totalPages, 
                       {(a.status === 'pendente' || a.status === 'confirmado') && (
                         <>
                           <button
-                            onClick={() => handleConcluir(a.id)}
+                            onClick={e => handleConcluir(e, a.id)}
                             disabled={loadingId === a.id}
                             className="p-1.5 rounded-lg text-muted-foreground hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 transition-colors disabled:opacity-40"
                             title="Concluir"
@@ -98,7 +112,7 @@ export function AgendamentosTable({ agendamentos, hasFilters, page, totalPages, 
                             <CheckCircle className="w-3.5 h-3.5" />
                           </button>
                           <button
-                            onClick={() => handleCancelar(a.id)}
+                            onClick={e => handleCancelar(e, a.id)}
                             disabled={loadingId === a.id}
                             className="p-1.5 rounded-lg text-muted-foreground hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors disabled:opacity-40"
                             title="Cancelar"

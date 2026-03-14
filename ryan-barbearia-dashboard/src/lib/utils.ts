@@ -75,11 +75,11 @@ export const STATUS_LABELS: Record<AgendamentoStatus, string> = {
 }
 
 export const STATUS_COLORS: Record<AgendamentoStatus, string> = {
-  pendente:  'bg-amber-50  text-amber-700  border-amber-200',
-  confirmado:'bg-emerald-50 text-emerald-700 border-emerald-200',
-  cancelado: 'bg-red-50    text-red-600    border-red-200',
-  concluido: 'bg-blue-50   text-blue-700   border-blue-200',
-  faltou:    'bg-violet-50 text-violet-700 border-violet-200',
+  pendente:  'bg-amber-100   text-amber-800   border-amber-300   dark:bg-amber-500/20  dark:text-amber-300  dark:border-amber-500/40',
+  confirmado:'bg-emerald-100 text-emerald-800 border-emerald-300 dark:bg-emerald-500/20 dark:text-emerald-300 dark:border-emerald-500/40',
+  cancelado: 'bg-red-100     text-red-700     border-red-300     dark:bg-red-500/20    dark:text-red-400    dark:border-red-500/40',
+  concluido: 'bg-sky-100     text-sky-800     border-sky-300     dark:bg-sky-500/20    dark:text-sky-300    dark:border-sky-500/40',
+  faltou:    'bg-violet-100  text-violet-800  border-violet-300  dark:bg-violet-500/20 dark:text-violet-300 dark:border-violet-500/40',
 }
 
 export const ORIGEM_LABELS: Record<string, string> = {

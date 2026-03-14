@@ -38,7 +38,8 @@ export function DashboardShell({ children, isAdmin = false, pendentesCount = 0 }
       <KeyboardShortcuts />
 
       {/* ── Header ── */}
-      <header className="sticky top-0 z-50 border-b border-border bg-card/90 backdrop-blur-xl shadow-sm">
+      <header className="sticky top-0 z-50 border-b border-border bg-card/90 backdrop-blur-xl shadow-sm relative">
+        <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-amber-500/50 to-transparent" />
         <div className="mx-auto max-w-[1600px] px-4 md:px-6 h-14 flex items-center justify-between gap-4">
 
           {/* Brand — avatar RG */}
@@ -76,7 +77,7 @@ export function DashboardShell({ children, isAdmin = false, pendentesCount = 0 }
 
       {/* ── Main ── */}
       <main className="mx-auto max-w-[1600px] px-4 md:px-6 py-5">
-        <div className="rounded-2xl border border-primary/20 bg-card/30 p-4 md:p-5 shadow-sm">
+        <div className="rounded-2xl border border-primary/20 bg-gradient-to-b from-muted/50 via-card/30 to-card/20 p-4 md:p-5 shadow-sm">
 
           {/* Tab navigation */}
           <nav className="mb-5 flex justify-center gap-0.5 rounded-xl bg-muted/60 p-1 overflow-x-auto scrollbar-none border border-border/50">
