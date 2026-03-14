@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { aprovarUsuario, recusarUsuario } from '@/actions/auth'
-import { ShieldCheck, UserCheck, UserX, Clock, Users } from 'lucide-react'
+import { ShieldCheck, UserCheck, UserX, Clock } from 'lucide-react'
 
 type Perfil = {
   id: string
@@ -81,13 +81,6 @@ export default async function AdminPage() {
   const ativos    = todos.filter((p: Perfil) => p.status === 'ativo')
   const recusados = todos.filter((p: Perfil) => p.status === 'recusado')
 
-  const stats = [
-    { label: 'Total', value: todos.length, icon: Users, color: 'text-muted-foreground', bg: 'bg-muted/60' },
-    { label: 'Pendentes', value: pendentes.length, icon: Clock, color: 'text-amber-600', bg: 'bg-amber-500/10' },
-    { label: 'Ativos', value: ativos.length, icon: UserCheck, color: 'text-green-600', bg: 'bg-green-500/10' },
-    { label: 'Recusados', value: recusados.length, icon: UserX, color: 'text-red-500', bg: 'bg-red-500/10' },
-  ]
-
   return (
     <div className="space-y-6 max-w-3xl mx-auto">
 
@@ -102,39 +95,16 @@ export default async function AdminPage() {
         </div>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        {stats.map(({ label, value, icon: Icon, color, bg }) => (
-          <div key={label} className="rounded-xl border border-border/60 bg-card p-4 flex items-center gap-3 shadow-sm">
-            <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${bg}`}>
-              <Icon className={`h-4 w-4 ${color}`} />
-            </div>
-            <div>
-              <p className={`text-2xl font-bold leading-none ${color}`}>{value}</p>
-              <p className="text-[11px] text-muted-foreground mt-1">{label}</p>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Pendentes */}
-      <section className="space-y-3">
-        <div className="flex items-center gap-2 px-1">
-          <Clock className="h-4 w-4 text-amber-500" />
-          <h2 className="font-semibold text-foreground text-sm">Aguardando aprovação</h2>
-          {pendentes.length > 0 && (
+      {/* Pendentes — só aparece se houver */}
+      {pendentes.length > 0 && (
+        <section className="space-y-3">
+          <div className="flex items-center gap-2 px-1">
+            <Clock className="h-4 w-4 text-amber-500" />
+            <h2 className="font-semibold text-foreground text-sm">Aguardando aprovação</h2>
             <span className="px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-600 text-xs font-bold border border-amber-500/20">
               {pendentes.length}
             </span>
-          )}
-        </div>
-
-        {pendentes.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-8 rounded-xl border border-dashed border-border/60 text-center gap-2">
-            <Clock className="h-8 w-8 text-muted-foreground/30" />
-            <p className="text-sm text-muted-foreground">Nenhum cadastro pendente</p>
           </div>
-        ) : (
           <div className="space-y-2">
             {pendentes.map((p: Perfil) => (
               <UserCard
@@ -166,8 +136,8 @@ export default async function AdminPage() {
               />
             ))}
           </div>
-        )}
-      </section>
+        </section>
+      )}
 
       {/* Ativos */}
       <section className="space-y-3">
