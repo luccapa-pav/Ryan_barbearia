@@ -116,10 +116,17 @@ export function AgendamentoSheet({ open, onClose, agendamento, servicos, prefill
     setLoadingSlots(true)
     setSelectedSlot('')
     buscarSlotsDisponiveis(selectedData, selectedServico, agendamento?.id).then(r => {
-      setSlots(r.slots ?? [])
+      const loaded = r.slots ?? []
+      setSlots(loaded)
+      // Re-seleciona automaticamente o slot pré-preenchido se ainda disponível
+      if (prefilledDataHora) {
+        const hora = prefilledDataHora.slice(11, 16) // "HH:MM"
+        const match = loaded.find(s => s.hora === hora)
+        if (match) setSelectedSlot(match.dataHoraISO)
+      }
       setLoadingSlots(false)
     })
-  }, [selectedData, selectedServico, agendamento?.id])
+  }, [selectedData, selectedServico, agendamento?.id, prefilledDataHora])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()

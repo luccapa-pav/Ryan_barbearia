@@ -127,7 +127,7 @@ export function VisaoGeralClient({ todosAgendamentos, todosLeads, hojeStr }: Vis
 
       <MetricasWhatsapp leads={leads} />
 
-      <GraficoReceitaSemana agendamentos={agendamentos} />
+      {periodo !== 'hoje' && <GraficoReceitaSemana agendamentos={agendamentos} />}
 
       <GraficoStatus leads={leads} />
 
