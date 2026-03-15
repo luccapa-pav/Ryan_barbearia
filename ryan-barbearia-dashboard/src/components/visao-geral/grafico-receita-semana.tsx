@@ -19,6 +19,7 @@ export function GraficoReceitaSemana({ agendamentos: appts }: GraficoReceitaSema
     const qtd     = Array(7).fill(0) as number[]
     for (const a of appts) {
       if (a.status === 'cancelado' || a.status === 'faltou') continue
+      // new Date() converte UTC→local; getDay() retorna o dia da semana no fuso do browser
       const dia = getDay(new Date(a.data_hora))
       receita[dia] += a.servicos?.preco ?? 0
       qtd[dia]++

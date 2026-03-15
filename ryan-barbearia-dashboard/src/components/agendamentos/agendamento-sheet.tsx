@@ -100,10 +100,12 @@ export function AgendamentoSheet({ open, onClose, agendamento, servicos, prefill
     if (clienteSearch.length < 2) { setClientes([]); return }
     const t = setTimeout(async () => {
       const supabase = createClient()
+      // Sanitiza caracteres que quebram o parser de filtro do PostgREST (vírgula, parênteses)
+      const safe = clienteSearch.replace(/[,()]/g, ' ')
       const { data } = await supabase
         .from('clientes')
         .select('*')
-        .or(`nome.ilike.%${clienteSearch}%,telefone.ilike.%${clienteSearch}%`)
+        .or(`nome.ilike.%${safe}%,telefone.ilike.%${safe}%`)
         .limit(5)
       setClientes(data ?? [])
     }, 300)
