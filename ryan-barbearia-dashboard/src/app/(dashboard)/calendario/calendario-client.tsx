@@ -10,8 +10,10 @@ import {
 import { ptBR } from 'date-fns/locale'
 import { ChevronLeft, ChevronRight, CalendarDays } from 'lucide-react'
 import { DatePickerFilter } from '@/components/agendamentos/date-picker-filter'
+import { AgendamentoSheet } from '@/components/agendamentos/agendamento-sheet'
 import { formatarHora, STATUS_COLORS, cn } from '@/lib/utils'
-import type { AgendamentoComRelacoes, HorarioTrabalho } from '@/lib/supabase/types'
+import { useRouter } from 'next/navigation'
+import type { AgendamentoComRelacoes, HorarioTrabalho, Servico } from '@/lib/supabase/types'
 
 type CalView = 'hoje' | 'semana' | 'mes' | 'ano' | 'custom'
 
@@ -32,12 +34,16 @@ const DOW_SHORT = ['Seg','Ter','Qua','Qui','Sex','Sáb','Dom']
 interface CalendarioClientProps {
   agendamentos: AgendamentoComRelacoes[]
   horarios: HorarioTrabalho[]
+  servicos: Servico[]
 }
 
-export function CalendarioClient({ agendamentos, horarios }: CalendarioClientProps) {
+export function CalendarioClient({ agendamentos, horarios, servicos }: CalendarioClientProps) {
   const [view, setView]           = useState<CalView>('semana')
   const [current, setCurrent]     = useState<Date>(new Date())
   const [customDate, setCustomDate] = useState<string>('')
+  const [sheetOpen, setSheetOpen] = useState(false)
+  const [prefilledDataHora, setPrefilledDataHora] = useState<string | null>(null)
+  const router = useRouter()
 
   // Índice por data YYYY-MM-DD — O(1) lookup
   const byDate = useMemo(() => {
@@ -70,6 +76,18 @@ export function CalendarioClient({ agendamentos, horarios }: CalendarioClientPro
   function goToday() { setCurrent(new Date()) }
 
   function goToDay(day: Date) { setCurrent(day); setView('hoje') }
+
+  function handleSlotClick(dateStr: string, hora: string) {
+    setPrefilledDataHora(`${dateStr}T${hora}:00`)
+    setSheetOpen(true)
+  }
+
+  function handleSheetClose() {
+    setSheetOpen(false)
+    setPrefilledDataHora(null)
+    router.refresh()
+  }
+
   function goToMonth(monthIndex: number) {
     setCurrent(new Date(current.getFullYear(), monthIndex, 1))
     setView('mes')
@@ -158,7 +176,7 @@ export function CalendarioClient({ agendamentos, horarios }: CalendarioClientPro
 
       {/* Conteúdo da view */}
       {view === 'hoje' && (
-        <DayView date={current} appts={getForDate(current)} horarios={horarios} />
+        <DayView date={current} appts={getForDate(current)} horarios={horarios} onSlotClick={handleSlotClick} />
       )}
       {view === 'semana' && (
         <WeekView current={current} byDate={byDate} onDayClick={goToDay} />
@@ -171,7 +189,7 @@ export function CalendarioClient({ agendamentos, horarios }: CalendarioClientPro
       )}
       {view === 'custom' && (
         customDate
-          ? <DayView date={new Date(customDate + 'T12:00:00')} appts={getForDate(new Date(customDate + 'T12:00:00'))} horarios={horarios} />
+          ? <DayView date={new Date(customDate + 'T12:00:00')} appts={getForDate(new Date(customDate + 'T12:00:00'))} horarios={horarios} onSlotClick={handleSlotClick} />
           : (
             <div className="flex flex-col items-center justify-center py-20 text-muted-foreground gap-3">
               <CalendarDays className="w-10 h-10 opacity-30" />
@@ -179,6 +197,14 @@ export function CalendarioClient({ agendamentos, horarios }: CalendarioClientPro
             </div>
           )
       )}
+
+      <AgendamentoSheet
+        open={sheetOpen}
+        onClose={handleSheetClose}
+        agendamento={null}
+        servicos={servicos}
+        prefilledDataHora={prefilledDataHora}
+      />
     </div>
   )
 }
@@ -224,12 +250,20 @@ function gerarSlotsLivres(
   return slots
 }
 
-function DayView({ date, appts, horarios }: { date: Date; appts: AgendamentoComRelacoes[]; horarios: HorarioTrabalho[] }) {
+function DayView({
+  date, appts, horarios, onSlotClick,
+}: {
+  date: Date
+  appts: AgendamentoComRelacoes[]
+  horarios: HorarioTrabalho[]
+  onSlotClick: (dateStr: string, hora: string) => void
+}) {
   const sorted  = [...appts].sort((a, b) => a.data_hora.localeCompare(b.data_hora))
   const isHoje  = isToday(date)
   const slots   = gerarSlotsLivres(date, appts, horarios)
   const livres  = slots.filter(s => s.livre).length
   const semExpediente = horarios.find(h => h.dia_semana === date.getDay()) === undefined
+  const dateStr = format(date, 'yyyy-MM-dd')
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-4">
@@ -307,25 +341,35 @@ function DayView({ date, appts, horarios }: { date: Date; appts: AgendamentoComR
         ) : (
           <div className="divide-y divide-border/50 max-h-[420px] overflow-y-auto">
             {slots.map(slot => (
-              <div key={slot.hora} className={cn(
-                'px-4 py-2.5 flex items-center gap-3',
-                slot.livre ? 'hover:bg-emerald-50/50 dark:hover:bg-emerald-950/20' : 'opacity-70'
-              )}>
-                <span className="text-xs font-bold font-gotham tabular-nums text-foreground w-11 shrink-0">
-                  {slot.hora}
-                </span>
-                {slot.livre ? (
+              slot.livre ? (
+                <button
+                  key={slot.hora}
+                  onClick={() => onSlotClick(dateStr, slot.hora)}
+                  className="w-full px-4 py-2.5 flex items-center gap-3 hover:bg-emerald-50/60 dark:hover:bg-emerald-950/20 transition-colors group/slot text-left"
+                  title="Agendar neste horário"
+                >
+                  <span className="text-xs font-bold font-gotham tabular-nums text-foreground w-11 shrink-0">
+                    {slot.hora}
+                  </span>
                   <span className="flex items-center gap-1.5 text-xs text-emerald-600 dark:text-emerald-400 font-semibold">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
                     Disponível
                   </span>
-                ) : (
+                  <span className="ml-auto text-[10px] text-emerald-600/0 group-hover/slot:text-emerald-600 dark:group-hover/slot:text-emerald-400 font-bold font-gotham uppercase transition-colors">
+                    + Agendar
+                  </span>
+                </button>
+              ) : (
+                <div key={slot.hora} className="px-4 py-2.5 flex items-center gap-3 opacity-70">
+                  <span className="text-xs font-bold font-gotham tabular-nums text-foreground w-11 shrink-0">
+                    {slot.hora}
+                  </span>
                   <span className="flex items-center gap-1.5 text-xs text-muted-foreground truncate">
                     <span className={cn('w-1.5 h-1.5 rounded-full shrink-0', statusDot(slot.appt?.status ?? 'pendente'))} />
                     <span className="truncate">{slot.appt?.clientes?.nome ?? 'Ocupado'}</span>
                   </span>
-                )}
-              </div>
+                </div>
+              )
             ))}
           </div>
         )}

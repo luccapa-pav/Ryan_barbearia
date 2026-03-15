@@ -22,11 +22,12 @@ interface AgendamentoSheetProps {
   onClose: () => void
   agendamento?: AgendamentoComRelacoes | null
   servicos: Servico[]
+  prefilledDataHora?: string | null
 }
 
 const DOW = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb']
 
-export function AgendamentoSheet({ open, onClose, agendamento, servicos }: AgendamentoSheetProps) {
+export function AgendamentoSheet({ open, onClose, agendamento, servicos, prefilledDataHora }: AgendamentoSheetProps) {
   const [loading, setLoading]               = useState(false)
   const [clienteSearch, setClienteSearch]   = useState('')
   const [clientes, setClientes]             = useState<Cliente[]>([])
@@ -72,6 +73,15 @@ export function AgendamentoSheet({ open, onClose, agendamento, servicos }: Agend
       setCalView(new Date(dataStr + 'T12:00:00'))
       setSelectedSlot(agendamento.data_hora)
       setObservacoes(agendamento.observacoes ?? '')
+    } else if (prefilledDataHora) {
+      setSelectedCliente(null)
+      setSelectedServico('')
+      const dataStr = prefilledDataHora.slice(0, 10)
+      setSelectedData(dataStr)
+      setCalView(new Date(dataStr + 'T12:00:00'))
+      setSelectedSlot(prefilledDataHora)
+      setObservacoes('')
+      setSlots([])
     } else {
       setSelectedCliente(null)
       setSelectedServico('')
@@ -83,7 +93,7 @@ export function AgendamentoSheet({ open, onClose, agendamento, servicos }: Agend
     }
     setClienteSearch('')
     setClientes([])
-  }, [agendamento, open])
+  }, [agendamento, open, prefilledDataHora])
 
   // Busca clientes com debounce
   useEffect(() => {

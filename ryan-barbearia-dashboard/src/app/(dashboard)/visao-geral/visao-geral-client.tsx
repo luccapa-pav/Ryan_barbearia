@@ -8,6 +8,7 @@ import { FiltroPeriodo } from '@/components/visao-geral/filtro-periodo'
 import { MetricasAgendamentos } from '@/components/visao-geral/metricas-agendamentos'
 import { MetricasWhatsapp } from '@/components/visao-geral/metricas-whatsapp'
 import { GraficoStatus } from '@/components/visao-geral/grafico-pico'
+import { GraficoReceitaSemana } from '@/components/visao-geral/grafico-receita-semana'
 import { UltimaAtualizacao } from '@/components/visao-geral/ultima-atualizacao'
 import { TimelineHoje } from '@/components/hoje/timeline'
 import { formatarHora } from '@/lib/utils'
@@ -125,6 +126,8 @@ export function VisaoGeralClient({ todosAgendamentos, todosLeads, hojeStr }: Vis
       />
 
       <MetricasWhatsapp leads={leads} />
+
+      <GraficoReceitaSemana agendamentos={agendamentos} />
 
       <GraficoStatus leads={leads} />
 

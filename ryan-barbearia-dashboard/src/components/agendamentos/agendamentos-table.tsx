@@ -15,9 +15,10 @@ interface AgendamentosTableProps {
   total: number
   onPage: (p: number) => void
   onEdit: (a: AgendamentoComRelacoes) => void
+  compact?: boolean
 }
 
-export function AgendamentosTable({ agendamentos, hasFilters, page, totalPages, total, onPage, onEdit }: AgendamentosTableProps) {
+export function AgendamentosTable({ agendamentos, hasFilters, page, totalPages, total, onPage, onEdit, compact = false }: AgendamentosTableProps) {
   const [loadingId, setLoadingId] = useState<string | null>(null)
 
   function handleCancelar(e: React.MouseEvent, id: string) {
@@ -102,20 +103,20 @@ export function AgendamentosTable({ agendamentos, hasFilters, page, totalPages, 
                   onClick={() => onEdit(a)}
                   className="hover:bg-muted/40 transition-colors group cursor-pointer"
                 >
-                  <td className="px-4 py-3.5 text-sm font-medium text-foreground whitespace-nowrap tabular-nums">{formatarDataHora(a.data_hora)}</td>
-                  <td className="px-4 py-3.5">
+                  <td className={cn('px-4 text-sm font-medium text-foreground whitespace-nowrap tabular-nums', compact ? 'py-2' : 'py-3.5')}>{formatarDataHora(a.data_hora)}</td>
+                  <td className={cn('px-4', compact ? 'py-2' : 'py-3.5')}>
                     <p className="text-sm font-semibold text-foreground leading-tight">{a.clientes?.nome}</p>
-                    <p className="text-xs text-muted-foreground mt-0.5">{a.clientes?.telefone}</p>
+                    {!compact && <p className="text-xs text-muted-foreground mt-0.5">{a.clientes?.telefone}</p>}
                   </td>
-                  <td className="px-4 py-3.5 text-sm text-foreground">{a.servicos?.nome}</td>
-                  <td className="px-4 py-3.5 text-sm font-bold text-foreground tabular-nums">{formatarMoeda(a.servicos?.preco ?? 0)}</td>
-                  <td className="px-4 py-3.5 w-28">
+                  <td className={cn('px-4 text-sm text-foreground', compact ? 'py-2' : 'py-3.5')}>{a.servicos?.nome}</td>
+                  <td className={cn('px-4 text-sm font-bold text-foreground tabular-nums', compact ? 'py-2' : 'py-3.5')}>{formatarMoeda(a.servicos?.preco ?? 0)}</td>
+                  <td className={cn('px-4 w-28', compact ? 'py-2' : 'py-3.5')}>
                     <span className={cn('inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold border whitespace-nowrap', STATUS_COLORS[a.status])}>
                       {STATUS_LABELS[a.status]}
                     </span>
                   </td>
-                  <td className="px-4 py-3.5 text-xs text-muted-foreground">{ORIGEM_LABELS[a.origem] ?? a.origem}</td>
-                  <td className="px-4 py-3.5" onClick={e => e.stopPropagation()}>
+                  <td className={cn('px-4 text-xs text-muted-foreground', compact ? 'py-2' : 'py-3.5')}>{ORIGEM_LABELS[a.origem] ?? a.origem}</td>
+                  <td className={cn('px-4', compact ? 'py-2' : 'py-3.5')} onClick={e => e.stopPropagation()}>
                     <div className="flex items-center gap-1 justify-end sm:opacity-0 sm:group-hover:opacity-100 sm:transition-opacity">
                       <button
                         onClick={e => { e.stopPropagation(); onEdit(a) }}

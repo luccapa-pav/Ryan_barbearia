@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { CalendarioClient } from './calendario-client'
-import type { AgendamentoComRelacoes, HorarioTrabalho } from '@/lib/supabase/types'
+import type { AgendamentoComRelacoes, HorarioTrabalho, Servico } from '@/lib/supabase/types'
 
 export const revalidate = 3600
 
@@ -11,7 +11,7 @@ export default async function CalendarioPage() {
   const from = new Date(now.getFullYear(), 0, 1)
   const to   = new Date(now.getFullYear(), 11, 31, 23, 59, 59)
 
-  const [agendResult, horariosResult] = await Promise.all([
+  const [agendResult, horariosResult, servicosResult] = await Promise.all([
     supabase
       .from('agendamentos')
       .select('*, clientes (id, nome, telefone), servicos (id, nome, duracao_minutos, preco)')
@@ -22,12 +22,18 @@ export default async function CalendarioPage() {
       .from('horarios_trabalho')
       .select('id, dia_semana, hora_inicio, hora_fim, ativo')
       .eq('ativo', true),
+    supabase
+      .from('servicos')
+      .select('id, nome, duracao_minutos, preco, ativo')
+      .eq('ativo', true)
+      .order('nome'),
   ])
 
   return (
     <CalendarioClient
       agendamentos={(agendResult.data ?? []) as AgendamentoComRelacoes[]}
       horarios={(horariosResult.data ?? []) as HorarioTrabalho[]}
+      servicos={(servicosResult.data ?? []) as Servico[]}
     />
   )
 }

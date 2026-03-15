@@ -1,9 +1,9 @@
 'use client'
 
-import { useState, useMemo, useTransition } from 'react'
+import { useState, useMemo, useTransition, useEffect } from 'react'
 import { format } from 'date-fns'
 import { useRouter } from 'next/navigation'
-import { Plus, SlidersHorizontal, X, ChevronDown } from 'lucide-react'
+import { Plus, SlidersHorizontal, X, ChevronDown, AlignJustify, List } from 'lucide-react'
 import { AgendamentoSheet } from '@/components/agendamentos/agendamento-sheet'
 import { AgendamentosTable } from '@/components/agendamentos/agendamentos-table'
 import { DatePickerFilter } from '@/components/agendamentos/date-picker-filter'
@@ -85,8 +85,15 @@ export function AgendamentosPageClient({ agendamentos, servicos, autoOpenSheet =
   const [page, setPage] = useState(1)
   const [sheetOpen, setSheetOpen] = useState(autoOpenSheet)
   const [editingAgendamento, setEditingAgendamento] = useState<AgendamentoComRelacoes | null>(null)
+  const [compact, setCompact] = useState(false)
   const [, startTransition] = useTransition()
   const router = useRouter()
+
+  // Lê preferência de densidade do localStorage após hydration
+  useEffect(() => {
+    const saved = localStorage.getItem('ryan-table-density')
+    if (saved === 'compact') setCompact(true)
+  }, [])
 
   const statusCounts = useMemo(() => ({
     pendente:   agendamentos.filter(a => a.status === 'pendente').length,
@@ -154,13 +161,27 @@ export function AgendamentosPageClient({ agendamentos, servicos, autoOpenSheet =
             {agendamentos.length} agendamento{agendamentos.length !== 1 ? 's' : ''} no total
           </p>
         </div>
-        <button
-          onClick={() => { setEditingAgendamento(null); setSheetOpen(true) }}
-          className="absolute right-0 flex items-center gap-2 px-5 py-2.5 bg-primary hover:bg-primary/90 text-primary-foreground font-bold rounded-xl transition-all duration-200 text-sm shadow-brand hover:scale-105 active:scale-95 font-gotham uppercase tracking-wide"
-        >
-          <Plus className="w-4 h-4" />
-          <span className="hidden sm:inline">Novo</span>
-        </button>
+        <div className="absolute right-0 flex items-center gap-2">
+          {/* Toggle de densidade */}
+          <button
+            onClick={() => {
+              const next = !compact
+              setCompact(next)
+              localStorage.setItem('ryan-table-density', next ? 'compact' : 'normal')
+            }}
+            title={compact ? 'Visualização normal' : 'Visualização compacta'}
+            className="p-2 rounded-lg border border-border text-muted-foreground hover:text-foreground hover:bg-muted transition-all hover:scale-105 active:scale-95"
+          >
+            {compact ? <AlignJustify className="w-4 h-4" /> : <List className="w-4 h-4" />}
+          </button>
+          <button
+            onClick={() => { setEditingAgendamento(null); setSheetOpen(true) }}
+            className="flex items-center gap-2 px-5 py-2.5 bg-primary hover:bg-primary/90 text-primary-foreground font-bold rounded-xl transition-all duration-200 text-sm shadow-brand hover:scale-105 active:scale-95 font-gotham uppercase tracking-wide"
+          >
+            <Plus className="w-4 h-4" />
+            <span className="hidden sm:inline">Novo</span>
+          </button>
+        </div>
       </div>
 
       {/* Stat cards — clicáveis, seleção múltipla, card maior = status dominante */}
@@ -293,6 +314,7 @@ export function AgendamentosPageClient({ agendamentos, servicos, autoOpenSheet =
         total={filtered.length}
         onPage={setPage}
         onEdit={a => { setEditingAgendamento(a); setSheetOpen(true) }}
+        compact={compact}
       />
 
       <AgendamentoSheet
