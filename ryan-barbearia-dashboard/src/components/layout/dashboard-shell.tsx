@@ -2,8 +2,8 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { CalendarCheck, CalendarDays, Users, Calendar, Settings, LogOut, ShieldCheck, Clock } from 'lucide-react'
-import { cn, formatarHora } from '@/lib/utils'
+import { CalendarCheck, CalendarDays, Users, Calendar, Settings, LogOut, ShieldCheck } from 'lucide-react'
+import { cn } from '@/lib/utils'
 import { ThemeToggle } from './theme-toggle'
 import { KeyboardShortcuts } from './keyboard-shortcuts'
 import { PageTransition } from './page-transition'
@@ -17,20 +17,14 @@ const BASE_TABS = [
   { href: '/configuracoes', label: 'Configurações', shortLabel: 'Config', icon: Settings },
 ]
 
-interface ProximoCliente {
-  data_hora: string
-  clientes: { nome: string } | null
-  servicos: { nome: string } | null
-}
-
 interface DashboardShellProps {
   children: React.ReactNode
   isAdmin?: boolean
   pendentesCount?: number
-  proximoCliente?: ProximoCliente | null
+  proximoClienteSlot?: React.ReactNode
 }
 
-export function DashboardShell({ children, isAdmin = false, pendentesCount = 0, proximoCliente = null }: DashboardShellProps) {
+export function DashboardShell({ children, isAdmin = false, pendentesCount = 0, proximoClienteSlot }: DashboardShellProps) {
   const pathname = usePathname()
 
   const today = new Date().toLocaleDateString('pt-BR', {
@@ -65,15 +59,8 @@ export function DashboardShell({ children, isAdmin = false, pendentesCount = 0, 
             </div>
           </div>
 
-          {/* Próximo cliente pill */}
-          {proximoCliente && (
-            <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-primary/8 border border-primary/20 text-xs">
-              <Clock className="w-3 h-3 text-primary shrink-0" />
-              <span className="font-bold text-primary tabular-nums">{formatarHora(proximoCliente.data_hora)}</span>
-              <span className="text-foreground/70 font-medium truncate max-w-[120px]">{proximoCliente.clientes?.nome}</span>
-              <span className="text-muted-foreground truncate max-w-[90px] hidden lg:inline">{proximoCliente.servicos?.nome}</span>
-            </div>
-          )}
+          {/* Próximo cliente pill — streamado via Suspense no layout */}
+          {proximoClienteSlot}
 
           {/* Actions */}
           <div className="flex items-center gap-1">

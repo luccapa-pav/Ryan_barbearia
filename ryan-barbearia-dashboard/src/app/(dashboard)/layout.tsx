@@ -1,6 +1,8 @@
+import { Suspense } from 'react'
 import { headers } from 'next/headers'
 import { createClient } from '@/lib/supabase/server'
 import { DashboardShell } from '@/components/layout/dashboard-shell'
+import { ProximoClientePill } from '@/components/layout/proximo-cliente-pill'
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   // Lê dados do perfil passados pelo middleware — evita queries duplicadas
@@ -10,29 +12,23 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
   const supabase = await createClient()
 
-  const [pendentesResult, proximoResult] = await Promise.all([
-    isAdmin
-      ? supabase.from('perfis').select('id', { count: 'exact', head: true }).eq('status', 'pendente')
-      : Promise.resolve({ count: 0 }),
-    supabase
-      .from('agendamentos')
-      .select('data_hora, clientes(nome), servicos(nome)')
-      .in('status', ['pendente', 'confirmado'])
-      .gt('data_hora', new Date().toISOString())
-      .order('data_hora', { ascending: true })
-      .limit(1)
-      .maybeSingle(),
-  ])
+  // Apenas pendentesCount bloqueia o render — proximoCliente é streamado via Suspense
+  const pendentesResult = isAdmin
+    ? await supabase.from('perfis').select('id', { count: 'exact', head: true }).eq('status', 'pendente')
+    : { count: 0 }
 
   const pendentesCount = pendentesResult.count ?? 0
-  const proximoCliente = proximoResult.data as {
-    data_hora: string
-    clientes: { nome: string } | null
-    servicos: { nome: string } | null
-  } | null
 
   return (
-    <DashboardShell isAdmin={isAdmin} pendentesCount={pendentesCount} proximoCliente={proximoCliente}>
+    <DashboardShell
+      isAdmin={isAdmin}
+      pendentesCount={pendentesCount}
+      proximoClienteSlot={
+        <Suspense fallback={null}>
+          <ProximoClientePill />
+        </Suspense>
+      }
+    >
       {children}
     </DashboardShell>
   )

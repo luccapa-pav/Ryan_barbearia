@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useCallback } from 'react'
 import {
   format, addWeeks, subWeeks, addMonths, subMonths,
   startOfWeek, endOfWeek, startOfMonth, endOfMonth,
@@ -82,11 +82,11 @@ export function CalendarioClient({ agendamentos, horarios, servicos }: Calendari
     setSheetOpen(true)
   }
 
-  function handleSheetClose() {
+  const handleSheetClose = useCallback(() => {
     setSheetOpen(false)
     setPrefilledDataHora(null)
     router.refresh()
-  }
+  }, [router])
 
   function goToMonth(monthIndex: number) {
     setCurrent(new Date(current.getFullYear(), monthIndex, 1))
@@ -187,16 +187,17 @@ export function CalendarioClient({ agendamentos, horarios, servicos }: Calendari
       {view === 'ano' && (
         <YearView year={current.getFullYear()} byDate={byDate} onMonthClick={goToMonth} />
       )}
-      {view === 'custom' && (
-        customDate
-          ? <DayView date={new Date(customDate + 'T12:00:00')} appts={getForDate(new Date(customDate + 'T12:00:00'))} horarios={horarios} onSlotClick={handleSlotClick} />
+      {view === 'custom' && (() => {
+        const customDateObj = customDate ? new Date(customDate + 'T12:00:00') : null
+        return customDateObj
+          ? <DayView date={customDateObj} appts={getForDate(customDateObj)} horarios={horarios} onSlotClick={handleSlotClick} />
           : (
             <div className="flex flex-col items-center justify-center py-20 text-muted-foreground gap-3">
               <CalendarDays className="w-10 h-10 opacity-30" />
               <p className="text-sm font-semibold">Escolha uma data acima</p>
             </div>
           )
-      )}
+      })()}
 
       <AgendamentoSheet
         open={sheetOpen}

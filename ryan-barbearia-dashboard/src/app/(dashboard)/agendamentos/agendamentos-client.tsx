@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo, useTransition, useEffect } from 'react'
+import { useState, useMemo, useTransition, useEffect, useCallback } from 'react'
 import { format } from 'date-fns'
 import { useRouter } from 'next/navigation'
 import { Plus, SlidersHorizontal, X, ChevronDown, AlignJustify, List } from 'lucide-react'
@@ -95,13 +95,21 @@ export function AgendamentosPageClient({ agendamentos, servicos, autoOpenSheet =
     if (saved === 'compact') setCompact(true)
   }, [])
 
+  // Filtra só por data (sem status) para que os cards reflitam o dia selecionado
+  const dateFiltered = useMemo(() =>
+    filterData
+      ? agendamentos.filter(a => a.data_hora.slice(0, 10) === filterData)
+      : agendamentos,
+    [agendamentos, filterData]
+  )
+
   const statusCounts = useMemo(() => ({
-    pendente:   agendamentos.filter(a => a.status === 'pendente').length,
-    confirmado: agendamentos.filter(a => a.status === 'confirmado').length,
-    cancelado:  agendamentos.filter(a => a.status === 'cancelado').length,
-    concluido:  agendamentos.filter(a => a.status === 'concluido').length,
-    faltou:     agendamentos.filter(a => a.status === 'faltou').length,
-  }), [agendamentos])
+    pendente:   dateFiltered.filter(a => a.status === 'pendente').length,
+    confirmado: dateFiltered.filter(a => a.status === 'confirmado').length,
+    cancelado:  dateFiltered.filter(a => a.status === 'cancelado').length,
+    concluido:  dateFiltered.filter(a => a.status === 'concluido').length,
+    faltou:     dateFiltered.filter(a => a.status === 'faltou').length,
+  }), [dateFiltered])
 
   // Feature 1: card com maior contagem recebe destaque visual
   const maxStatusKey = useMemo(() => {
@@ -144,11 +152,11 @@ export function AgendamentosPageClient({ agendamentos, servicos, autoOpenSheet =
     })
   }
 
-  function handleClose() {
+  const handleClose = useCallback(() => {
     setSheetOpen(false)
     setEditingAgendamento(null)
     router.refresh()
-  }
+  }, [router])
 
   return (
     <div className="space-y-6 animate-fade-up">

@@ -12,12 +12,19 @@ export default async function AgendamentosPage({
   const supabase = await createClient()
   const { novo } = await searchParams
 
+  // Janela de 6 meses atrás até 3 meses à frente — evita truncar histórico silenciosamente
+  const now = new Date()
+  const from = new Date(now); from.setMonth(from.getMonth() - 6)
+  const to   = new Date(now); to.setMonth(to.getMonth() + 3)
+
   const [agendamentosRes, servicosRes] = await Promise.all([
     supabase
       .from('agendamentos')
       .select('*, clientes (id, nome, telefone), servicos (id, nome, duracao_minutos, preco)')
+      .gte('data_hora', from.toISOString())
+      .lte('data_hora', to.toISOString())
       .order('data_hora', { ascending: false })
-      .limit(500),
+      .limit(1000),
     supabase.from('servicos').select('*').eq('ativo', true).order('nome'),
   ])
 
