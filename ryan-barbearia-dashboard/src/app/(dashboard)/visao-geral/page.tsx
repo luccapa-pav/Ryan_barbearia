@@ -30,6 +30,9 @@ export default async function VisaoGeralPage() {
       .lte('timestamp_ultima_msg', to.toISOString()),
   ])
 
+  if (agendResult.error) console.error('[visao-geral/page] agendamentos:', agendResult.error.message)
+  if (leadsResult.error) console.error('[visao-geral/page] leads:', leadsResult.error.message)
+
   const agendamentos = (agendResult.data ?? []) as AgendamentoComRelacoes[]
   const leads        = leadsResult.data ?? []
   const hojeStr      = format(now, 'yyyy-MM-dd')

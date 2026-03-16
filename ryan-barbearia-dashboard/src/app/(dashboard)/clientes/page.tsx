@@ -14,12 +14,18 @@ export default async function ClientesPage() {
       .order('nome', { ascending: true }),
     supabase
       .from('agendamentos')
-      .select('cliente_id, status, data_hora, servicos (id, nome, preco)')
-      .order('data_hora', { ascending: false }),
+      .select('id, cliente_id, status, data_hora, servicos (id, nome, preco)')
+      .gte('data_hora', new Date(Date.now() - 2 * 365 * 24 * 60 * 60 * 1000).toISOString())
+      .order('data_hora', { ascending: false })
+      .limit(2000),
     supabase
       .from('ryan_gomes_barbearia')
       .select('whatsapp, quantidade_cortes, gasto_total, servico_habitual, resumo_perfil_cliente'),
   ])
+
+  if (clientesResult.error) console.error('[clientes/page] clientes:', clientesResult.error.message)
+  if (agendResult.error) console.error('[clientes/page] agendamentos:', agendResult.error.message)
+  if (crmResult.error) console.error('[clientes/page] crm:', crmResult.error.message)
 
   return (
     <ClientesPageClient

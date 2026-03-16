@@ -23,8 +23,8 @@ const CARDS = (total: number, receita: number, concluidos: number) => [
     sub: 'em serviços',
     icon: DollarSign,
     border: 'border-l-emerald-500',
-    iconBg: 'bg-emerald-50',
-    iconColor: 'text-emerald-600',
+    iconBg: 'bg-emerald-50 dark:bg-emerald-500/20',
+    iconColor: 'text-emerald-600 dark:text-emerald-400',
   },
   {
     label: 'Concluídos',
@@ -32,8 +32,8 @@ const CARDS = (total: number, receita: number, concluidos: number) => [
     sub: `de ${total} agendamentos`,
     icon: CheckCircle,
     border: 'border-l-blue-500',
-    iconBg: 'bg-blue-50',
-    iconColor: 'text-blue-600',
+    iconBg: 'bg-blue-50 dark:bg-blue-500/20',
+    iconColor: 'text-blue-600 dark:text-blue-400',
   },
   {
     label: 'Aproveitamento',
@@ -41,8 +41,8 @@ const CARDS = (total: number, receita: number, concluidos: number) => [
     sub: 'taxa de conclusão',
     icon: TrendingUp,
     border: 'border-l-violet-500',
-    iconBg: 'bg-violet-50',
-    iconColor: 'text-violet-600',
+    iconBg: 'bg-violet-50 dark:bg-violet-500/20',
+    iconColor: 'text-violet-600 dark:text-violet-400',
   },
 ]
 

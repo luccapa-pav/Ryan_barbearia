@@ -49,28 +49,32 @@ export function DatePickerFilter({ value, onChange, disabled }: DatePickerFilter
 
   return (
     <div ref={ref} className="relative">
-      <button
-        type="button"
-        disabled={disabled}
-        onClick={() => setOpen(o => !o)}
-        className={cn(
-          'flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold font-gotham uppercase tracking-wide transition-all duration-150 hover:scale-105 active:scale-95',
-          selected
-            ? 'bg-primary text-primary-foreground shadow-sm'
-            : 'bg-muted/60 border border-border/50 text-muted-foreground hover:text-foreground hover:bg-card/80'
-        )}
-      >
-        <CalendarDays className="w-3.5 h-3.5 shrink-0" />
-        {selected ? format(selected, "dd/MM/yyyy") : 'Data'}
+      <div className="flex items-center">
+        <button
+          type="button"
+          disabled={disabled}
+          onClick={() => setOpen(o => !o)}
+          className={cn(
+            'flex items-center gap-2 px-3 py-1.5 text-xs font-bold font-gotham uppercase tracking-wide transition-all duration-150 hover:scale-105 active:scale-95',
+            selected
+              ? 'bg-primary text-primary-foreground shadow-sm rounded-l-lg'
+              : 'bg-muted/60 border border-border/50 text-muted-foreground hover:text-foreground hover:bg-card/80 rounded-lg'
+          )}
+        >
+          <CalendarDays className="w-3.5 h-3.5 shrink-0" />
+          {selected ? format(selected, "dd/MM/yyyy") : 'Data'}
+        </button>
         {selected && (
-          <span
+          <button
+            type="button"
             onClick={clear}
-            className="ml-0.5 opacity-70 hover:opacity-100 transition-opacity"
+            tabIndex={-1}
+            className="flex items-center justify-center pl-0.5 pr-2 py-1.5 bg-primary text-primary-foreground shadow-sm rounded-r-lg opacity-70 hover:opacity-100 transition-opacity"
           >
             <X className="w-3 h-3" />
-          </span>
+          </button>
         )}
-      </button>
+      </div>
 
       {open && (
         <div className="absolute top-full left-0 mt-2 z-50 bg-card border border-border rounded-2xl shadow-elevated overflow-hidden w-72">
