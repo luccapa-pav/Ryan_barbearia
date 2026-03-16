@@ -17,6 +17,11 @@ export function TimelineHoje({ agendamentosIniciais, hojeStr }: TimelineHojeProp
   const [agendamentos, setAgendamentos] = useState<AgendamentoComRelacoes[]>(agendamentosIniciais)
   const originalTitle = useRef<string>('')
 
+  // Sincroniza quando o server re-envia dados (ex: router.refresh())
+  useEffect(() => {
+    setAgendamentos(agendamentosIniciais)
+  }, [agendamentosIniciais])
+
   useEffect(() => {
     originalTitle.current = document.title
   }, [])
@@ -31,11 +36,12 @@ export function TimelineHoje({ agendamentosIniciais, hojeStr }: TimelineHojeProp
       }, async (payload) => {
         const amanha = new Date(hojeStr)
         amanha.setDate(amanha.getDate() + 1)
+        const amanhaDiaStr = `${amanha.getFullYear()}-${String(amanha.getMonth() + 1).padStart(2, '0')}-${String(amanha.getDate()).padStart(2, '0')}`
         const { data } = await supabase
           .from('agendamentos')
           .select('*, clientes (id, nome, telefone), servicos (id, nome, duracao_minutos, preco)')
           .gte('data_hora', `${hojeStr}T00:00:00`)
-          .lt('data_hora', `${amanha.toISOString().split('T')[0]}T00:00:00`)
+          .lt('data_hora', `${amanhaDiaStr}T00:00:00`)
           .not('status', 'eq', 'cancelado')
           .order('data_hora', { ascending: true })
         if (data) {
