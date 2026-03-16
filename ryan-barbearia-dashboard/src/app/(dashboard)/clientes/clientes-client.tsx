@@ -345,6 +345,7 @@ function ClienteDetalhe({ cliente, stats, crm, onClose }: ClienteDetalheProps) {
           </div>
           <button
             onClick={onClose}
+            aria-label="Fechar painel"
             className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-all active:scale-95 shrink-0"
           >
             <X className="w-4 h-4" />
@@ -550,6 +551,9 @@ function NovoClienteModal({ onClose }: { onClose: () => void }) {
       <div className="fixed inset-0 bg-black/20 z-40" onClick={onClose} />
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
         <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Novo Cliente"
           className="pointer-events-auto w-full max-w-sm bg-card rounded-2xl border border-border shadow-2xl flex flex-col animate-fade-up"
           onClick={e => e.stopPropagation()}
         >
@@ -574,6 +578,7 @@ function NovoClienteModal({ onClose }: { onClose: () => void }) {
             </div>
             <button
               onClick={onClose}
+              aria-label="Fechar"
               className="p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-all active:scale-95"
             >
               <X className="w-4 h-4" />

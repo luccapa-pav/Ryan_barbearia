@@ -9,6 +9,7 @@ const TAB_KEYS: Record<string, string> = {
   '3': '/agendamentos',
   '4': '/clientes',
   '5': '/configuracoes',
+  '6': '/admin',
 }
 
 const PERIODO_KEYS: Record<string, string> = {
@@ -24,6 +25,7 @@ export function KeyboardShortcuts() {
     function handleKey(e: KeyboardEvent) {
       const tag = (e.target as HTMLElement).tagName
       if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return
+      if ((e.target as HTMLElement).isContentEditable) return
       if (e.metaKey || e.ctrlKey || e.altKey) return
 
       const key = e.key.toLowerCase()

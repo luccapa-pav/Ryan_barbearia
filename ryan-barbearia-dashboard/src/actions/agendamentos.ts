@@ -4,7 +4,13 @@ import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import type { AgendamentoInsert, AgendamentoUpdate } from '@/lib/supabase/types'
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
 export async function criarAgendamento(data: Omit<AgendamentoInsert, 'origem'>) {
+  if (!UUID_RE.test(data.cliente_id ?? '')) return { success: false, error: 'cliente_id inválido' }
+  if (!UUID_RE.test(data.servico_id ?? '')) return { success: false, error: 'servico_id inválido' }
+  if (!data.data_hora || isNaN(new Date(data.data_hora).getTime())) return { success: false, error: 'data_hora inválida' }
+
   const supabase = await createClient()
 
   const { data: agendamento, error } = await supabase
@@ -26,6 +32,8 @@ export async function criarAgendamento(data: Omit<AgendamentoInsert, 'origem'>) 
 }
 
 export async function atualizarAgendamento(id: string, data: AgendamentoUpdate) {
+  if (!UUID_RE.test(id)) return { success: false, error: 'id inválido' }
+
   const supabase = await createClient()
 
   const { data: agendamento, error } = await supabase
@@ -66,6 +74,11 @@ export async function buscarSlotsDisponiveis(
 ) {
   const supabase = await createClient()
 
+  // Compute next day for inclusive end-of-day range (avoids missing 23:59:59 edge)
+  const nextDay = new Date(data + 'T12:00:00')
+  nextDay.setDate(nextDay.getDate() + 1)
+  const nextDayStr = `${nextDay.getFullYear()}-${String(nextDay.getMonth() + 1).padStart(2, '0')}-${String(nextDay.getDate()).padStart(2, '0')}`
+
   // Fetch all needed data in parallel
   const [servicoRes, horariosRes, bloqueiosRes, agendamentosRes, configRes] = await Promise.all([
     supabase.from('servicos').select('duracao_minutos').eq('id', servicoId).single(),
@@ -75,7 +88,7 @@ export async function buscarSlotsDisponiveis(
       .from('agendamentos')
       .select('data_hora, servico_id, servicos(duracao_minutos)')
       .gte('data_hora', `${data}T00:00:00`)
-      .lt('data_hora', `${data}T23:59:59`)
+      .lt('data_hora', `${nextDayStr}T00:00:00`)
       .not('status', 'in', '(cancelado,faltou)')
       .neq('id', agendamentoIdExcluir ?? '00000000-0000-0000-0000-000000000000'),
     supabase

@@ -53,6 +53,8 @@ export function DatePickerFilter({ value, onChange, disabled }: DatePickerFilter
         <button
           type="button"
           disabled={disabled}
+          aria-expanded={open}
+          aria-label={selected ? `Filtro de data: ${format(selected, 'dd/MM/yyyy')}` : 'Filtrar por data'}
           onClick={() => setOpen(o => !o)}
           className={cn(
             'flex items-center gap-2 px-3 py-1.5 text-xs font-bold font-gotham uppercase tracking-wide transition-all duration-150 hover:scale-105 active:scale-95',
@@ -83,6 +85,7 @@ export function DatePickerFilter({ value, onChange, disabled }: DatePickerFilter
             <button
               type="button"
               onClick={() => setView(d => subMonths(d, 1))}
+              aria-label="Mês anterior"
               className="p-1.5 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
             >
               <ChevronLeft className="w-4 h-4" />
@@ -93,6 +96,7 @@ export function DatePickerFilter({ value, onChange, disabled }: DatePickerFilter
             <button
               type="button"
               onClick={() => setView(d => addMonths(d, 1))}
+              aria-label="Próximo mês"
               className="p-1.5 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
             >
               <ChevronRight className="w-4 h-4" />

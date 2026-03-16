@@ -101,7 +101,7 @@ export function AgendamentoSheet({ open, onClose, agendamento, servicos, prefill
     const t = setTimeout(async () => {
       const supabase = createClient()
       // Sanitiza caracteres que quebram o parser de filtro do PostgREST (vírgula, parênteses)
-      const safe = clienteSearch.replace(/[,()]/g, ' ')
+      const safe = clienteSearch.replace(/[,()%_]/g, ' ')
       const { data } = await supabase
         .from('clientes')
         .select('*')
@@ -192,6 +192,9 @@ export function AgendamentoSheet({ open, onClose, agendamento, servicos, prefill
       {/* Modal centralizado */}
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
         <div
+          role="dialog"
+          aria-modal="true"
+          aria-label={agendamento ? 'Editar Agendamento' : 'Novo Agendamento'}
           className="pointer-events-auto w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-card rounded-2xl border border-border shadow-2xl flex flex-col animate-fade-up"
           onClick={e => e.stopPropagation()}
         >
@@ -209,6 +212,7 @@ export function AgendamentoSheet({ open, onClose, agendamento, servicos, prefill
               </div>
               <button
                 onClick={onClose}
+                aria-label="Fechar"
                 className="p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted transition-all active:scale-95 hover:scale-105"
               >
                 <X className="w-5 h-5" />
@@ -336,6 +340,7 @@ export function AgendamentoSheet({ open, onClose, agendamento, servicos, prefill
                       type="button"
                       onClick={() => setCalView(d => subMonths(d, 1))}
                       disabled={isCurrentOrPastMonth}
+                      aria-label="Mês anterior"
                       className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors disabled:opacity-20 disabled:cursor-not-allowed"
                     >
                       <ChevronLeft className="w-4 h-4" />
@@ -346,6 +351,7 @@ export function AgendamentoSheet({ open, onClose, agendamento, servicos, prefill
                     <button
                       type="button"
                       onClick={() => setCalView(d => addMonths(d, 1))}
+                      aria-label="Próximo mês"
                       className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
                     >
                       <ChevronRight className="w-4 h-4" />
